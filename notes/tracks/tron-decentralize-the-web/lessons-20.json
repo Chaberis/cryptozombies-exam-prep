@@ -1,0 +1,160 @@
+{
+  "trackTitle": "Tron: Decentralize the web",
+  "includedLessons": [
+    20
+  ],
+  "sourceNotes": {
+    "ruAvailable": false,
+    "codeRepoCoverage": {
+      "20": "missing"
+    }
+  },
+  "lessons": [
+    {
+      "lessonNumber": 20,
+      "trackTitle": "Tron: Decentralize the web",
+      "lessonTitle": "Deploying to TRON",
+      "siteChapterCount": 10,
+      "repoElementCount": 11,
+      "ruAvailable": false,
+      "codeRepoAvailable": false,
+      "codeRepoNotes": "В `cryptozombies-lesson-code` нет отдельного каталога `lesson-20/`. Нужный код берётся из answer blocks в `en/20/*.md`.",
+      "summary": "Урок 20 учит переносить уже написанные CryptoZombies-контракты в экосистему TRON с помощью TronBox и TronWeb. Нужно инициализировать TronBox project, адаптировать Solidity-код под TRON-единицы (`trx` вместо `ether` в конкретном месте урока), скомпилировать контракты в JSON artifacts, сгенерировать TRON account/private key, передать ключ в конфигурацию через environment variables, написать migration script и выполнить деплой сначала в Shasta testnet, а затем в TRON mainnet. Практический итог урока — готовый TRON-ready deploy flow для `ZombieOwnership`: мигрированные контракты, compiled artifacts, генерация ключа, `tronbox.js` с сетевыми конфигами и migrations для Shasta/mainnet.",
+      "mustKnow": [
+        "В уроке используются два инструмента: TronBox для compile/deploy/migrations и TronWeb для работы с аккаунтами и ключами.",
+        "Ethereum-ориентированный контракт нужно адаптировать под TRON, заменив ETH-номинированное значение на TRX-номинированное (`0.001 ether` -> `26 trx` в уроке).",
+        "`tronbox init` создаёт обязательную структуру проекта (`contracts`, `migrations`, `test`, config files), и TronBox ожидает именно её.",
+        "Компиляция обязательна, потому что TVM исполняет bytecode, а не исходный Solidity; TronBox создаёт JSON artifacts с ABI, bytecode и compiler metadata.",
+        "В уроке фиксируется версия Solidity compiler `0.5.18` в `tronbox.js`.",
+        "TRON accounts используют public/private key pairs, а deployment transactions должны быть подписаны private key соответствующего аккаунта.",
+        "Private keys нужно передавать через environment variables вроде `PRIVATE_KEY_SHASTA` и `PRIVATE_KEY_MAINNET`, а не хранить прямо в config file.",
+        "Migrations — это упорядоченные JavaScript deploy scripts; в уроке пишется скрипт деплоя `ZombieOwnership`, который затем запускается в Shasta и mainnet."
+      ],
+      "keyConcepts": [
+        "TRON Virtual Machine (TVM) и почему нужна компиляция в bytecode",
+        "позиционирование TRON в уроке: DPoS, выше throughput, дешевле транзакции",
+        "структура проекта TronBox и generation of artifacts",
+        "разница между TRX denomination и Ethereum `ether` units",
+        "TRON accounts, addresses и подпись private key",
+        "управление секретами через environment variables",
+        "migrations и on-chain tracking через `Migrations.sol`",
+        "testnet-first deploy flow: Shasta перед mainnet"
+      ],
+      "examTasks": [
+        "Объяснить роли TronBox и TronWeb в deploy workflow и назвать хотя бы две возможности TronBox.",
+        "По Solidity-контракту, перенесённому из Ethereum, определить, что нужно изменить для TRON currency units, и привести конкретную замену из урока.",
+        "Перечислить файлы и каталоги, которые создаёт `tronbox init`, и объяснить, почему их не стоит произвольно переименовывать.",
+        "Объяснить, что такое artifacts, куда TronBox их пишет и какие данные они содержат.",
+        "Написать двухстрочный JavaScript snippet из урока для генерации TRON account/private key через TronWeb.",
+        "Объяснить, зачем используется `PRIVATE_KEY_SHASTA` и почему урок рекомендует environment variables вместо хранения секретов в config.",
+        "Написать минимальный TronBox migration script, который деплоит контракт через `deployer.deploy(...)`.",
+        "Назвать команды деплоя в Shasta testnet и в TRON mainnet и объяснить эффект `--reset` при деплое в Shasta."
+      ],
+      "checklist": [
+        "Я могу назвать точное название трека `Tron: Decentralize the web` и урока `Deploying to TRON`.",
+        "Я помню, что урок содержит 11 repo elements: overview, 9 chapter files и lesson complete.",
+        "Я могу объяснить разделение ролей между TronBox и TronWeb.",
+        "Я могу описать обязательную миграцию кода из Ethereum в TRON через замену `ether` на `trx` в нужном месте.",
+        "Я понимаю, почему компиляция создаёт JSON artifacts и где они используются дальше.",
+        "Я могу сгенерировать TRON account/private key через TronWeb и понимаю, что этим ключом подписываются транзакции.",
+        "Я понимаю, как `PRIVATE_KEY_SHASTA` и `PRIVATE_KEY_MAINNET` передаются в TronBox безопаснее, чем hardcoded secrets.",
+        "Я могу написать или узнать migration script и команды деплоя для Shasta и mainnet."
+      ],
+      "snippets": [
+        {
+          "title": "Замена level-up fee с Ethereum units на TRX",
+          "language": "solidity",
+          "sourcePath": "en/20/03.md",
+          "code": "uint levelUpFee = 26 trx;"
+        },
+        {
+          "title": "Фиксация версии Solidity compiler в TronBox",
+          "language": "json",
+          "sourcePath": "en/20/04.md",
+          "code": "compilers: {\n  solc: {\n    version: '0.5.18'\n  }\n}"
+        },
+        {
+          "title": "Генерация TRON account/private key через TronWeb",
+          "language": "javascript",
+          "sourcePath": "en/20/05.md",
+          "code": "const tronWeb = require('tronweb')\nconsole.log(tronWeb.utils.accounts.generateAccount())"
+        },
+        {
+          "title": "Использование environment variables для ключей Shasta/Mainnet",
+          "language": "javascript",
+          "sourcePath": "en/20/06.md",
+          "code": "mainnet: {\n  privateKey: process.env.PRIVATE_KEY_MAINNET,\n  userFeePercentage: 100,\n  feeLimit: 1000 * 1e6,\n  fullHost: '<https://api.trongrid.io>',\n  network_id: '1'\n},\nshasta: {\n  privateKey: process.env.PRIVATE_KEY_SHASTA,\n  userFeePercentage: 50,\n  feeLimit: 1000 * 1e6,\n  fullHost: '<https://api.shasta.trongrid.io>',\n  network_id: '2'\n}"
+        },
+        {
+          "title": "Минимальный TronBox migration для ZombieOwnership",
+          "language": "javascript",
+          "sourcePath": "en/20/07.md",
+          "code": "var ZombieOwnershipContract = artifacts.require(\"./ZombieOwnershipContract.sol\");\n\nmodule.exports = function(deployer) {\n  deployer.deploy(ZombieOwnershipContract);\n}"
+        },
+        {
+          "title": "Команда деплоя в Shasta testnet",
+          "language": "shell",
+          "sourcePath": "en/20/08.md",
+          "code": "tronbox migrate --reset --network shasta"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Deploying to TRON",
+          "path": "en/20/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Introduction",
+          "path": "en/20/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Initialize Your Project",
+          "path": "en/20/02.md"
+        },
+        {
+          "order": 4,
+          "title": "Migrating the Smart Contracts",
+          "path": "en/20/03.md"
+        },
+        {
+          "order": 5,
+          "title": "Compiling the Source Code",
+          "path": "en/20/04.md"
+        },
+        {
+          "order": 6,
+          "title": "Accounts and Private Keys",
+          "path": "en/20/05.md"
+        },
+        {
+          "order": 7,
+          "title": "Generating a Private Key",
+          "path": "en/20/06.md"
+        },
+        {
+          "order": 8,
+          "title": "Migrations",
+          "path": "en/20/07.md"
+        },
+        {
+          "order": 9,
+          "title": "Deploy to the Shasta test network",
+          "path": "en/20/08.md"
+        },
+        {
+          "order": 10,
+          "title": "Deploy to the TRON main network",
+          "path": "en/20/09.md"
+        },
+        {
+          "order": 11,
+          "title": "Lesson Complete!",
+          "path": "en/20/lessoncomplete.md"
+        }
+      ]
+    }
+  ]
+}

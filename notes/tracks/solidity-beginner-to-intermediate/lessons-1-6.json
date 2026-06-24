@@ -1,0 +1,932 @@
+[
+  {
+    "lessonId": 1,
+    "track": "Solidity: Beginner to Intermediate Smart Contracts",
+    "siteTitle": "Фабрика Зомби",
+    "siteChapterCount": 15,
+    "repoEntryCount": 16,
+    "ruAvailable": true,
+    "codeRepoAvailable": true,
+    "focus": "Базовый синтаксис Solidity: контракты, state variables, математика, структуры, массивы, функции, события.",
+    "chapters": [
+      {
+        "order": 1,
+        "enPath": "en/1/00-overview.md",
+        "ruPath": "ru/1/00-overview.md",
+        "enTitle": "Making the Zombie Factory",
+        "ruTitle": "Фабрика Зомби"
+      },
+      {
+        "order": 2,
+        "enPath": "en/1/lessonoverview.md",
+        "ruPath": "ru/1/lessonoverview.md",
+        "enTitle": "Lesson Overview",
+        "ruTitle": "Обзор урока"
+      },
+      {
+        "order": 3,
+        "enPath": "en/1/contracts.md",
+        "ruPath": "ru/1/contracts.md",
+        "enTitle": "\"Contracts\"",
+        "ruTitle": "Контракты"
+      },
+      {
+        "order": 4,
+        "enPath": "en/1/datatypes.md",
+        "ruPath": "ru/1/datatypes.md",
+        "enTitle": "State Variables & Integers",
+        "ruTitle": "Переменные состояния и целые числа"
+      },
+      {
+        "order": 5,
+        "enPath": "en/1/math.md",
+        "ruPath": "ru/1/math.md",
+        "enTitle": "Math Operations",
+        "ruTitle": "Математические операции"
+      },
+      {
+        "order": 6,
+        "enPath": "en/1/structs.md",
+        "ruPath": "ru/1/structs.md",
+        "enTitle": "Structs",
+        "ruTitle": "Структуры"
+      },
+      {
+        "order": 7,
+        "enPath": "en/1/arrays.md",
+        "ruPath": "ru/1/arrays.md",
+        "enTitle": "Arrays",
+        "ruTitle": "Массивы"
+      },
+      {
+        "order": 8,
+        "enPath": "en/1/functions.md",
+        "ruPath": "ru/1/functions.md",
+        "enTitle": "Function Declarations",
+        "ruTitle": "Как задавать функции"
+      },
+      {
+        "order": 9,
+        "enPath": "en/1/arraysstructs2.md",
+        "ruPath": "ru/1/arraysstructs2.md",
+        "enTitle": "Working With Structs and Arrays",
+        "ruTitle": "Как работать со структурами и массивами"
+      },
+      {
+        "order": 10,
+        "enPath": "en/1/functions2.md",
+        "ruPath": "ru/1/functions2.md",
+        "enTitle": "Private / Public Functions",
+        "ruTitle": "Закрытые и открытые функции"
+      },
+      {
+        "order": 11,
+        "enPath": "en/1/functions3.md",
+        "ruPath": "ru/1/functions3.md",
+        "enTitle": "More on Functions",
+        "ruTitle": "Еще о функциях"
+      },
+      {
+        "order": 12,
+        "enPath": "en/1/keccak256.md",
+        "ruPath": "ru/1/keccak256.md",
+        "enTitle": "Keccak256 and Typecasting",
+        "ruTitle": "Keccak256 и преобразование типов данных"
+      },
+      {
+        "order": 13,
+        "enPath": "en/1/puttingittogether.md",
+        "ruPath": "ru/1/puttingittogether.md",
+        "enTitle": "Putting It Together",
+        "ruTitle": "Соберем все вместе"
+      },
+      {
+        "order": 14,
+        "enPath": "en/1/events.md",
+        "ruPath": "ru/1/events.md",
+        "enTitle": "Events",
+        "ruTitle": "События"
+      },
+      {
+        "order": 15,
+        "enPath": "en/1/web3js.md",
+        "ruPath": "ru/1/web3js.md",
+        "enTitle": "Web3.js",
+        "ruTitle": "Web3.js"
+      },
+      {
+        "order": 16,
+        "enPath": "en/1/lessoncomplete.md",
+        "ruPath": "ru/1/lessoncomplete.md",
+        "enTitle": "Lesson 1 Complete!",
+        "ruTitle": "Урок 1 завершен!"
+      }
+    ],
+    "summary": [
+      "Урок 1 строит минимальный смарт-контракт игры: фабрику, которая создаёт зомби по имени пользователя.",
+      "Главная цель — понять базовый синтаксис Solidity и научиться проектировать состояние контракта через `struct`, динамический массив и `event`.",
+      "К концу урока нужно уметь объяснить, как из входной строки получить псевдослучайный `dna`, как записать нового зомби в storage и как уведомить фронтенд через событие."
+    ],
+    "mustKnow": [
+      "`contract`, `struct`, state variables и visibility (`public`, `private`).",
+      "Динамические массивы в storage и `push` для создания новой записи.",
+      "`keccak256(abi.encodePacked(...))` для детерминированного хеша.",
+      "`event` + `emit` как канал связи контракта с внешним миром.",
+      "Разделение на внутренние функции (`_createZombie`, `_generateRandomDna`) и внешнюю точку входа (`createRandomZombie`)."
+    ],
+    "examTasks": [
+      "Написать контракт с `struct` и массивом сущностей.",
+      "Сгенерировать производное значение из строки через `keccak256` и привести тип к `uint`.",
+      "Создать сущность и отправить `event` после записи в storage.",
+      "Объяснить, зачем внутренняя функция вынесена отдельно от публичной."
+    ],
+    "architecture": [
+      "`ZombieFactory` — единственный контракт урока.",
+      "Состояние: `dnaDigits`, `dnaModulus`, `Zombie[] public zombies`.",
+      "Поведение: `_createZombie`, `_generateRandomDna`, `createRandomZombie`."
+    ],
+    "snippets": [
+      {
+        "title": "Финальный контракт урока",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\ncontract ZombieFactory {\n\n    event NewZombie(uint zombieId, string name, uint dna);\n\n    uint dnaDigits = 16;\n    uint dnaModulus = 10 ** dnaDigits;\n\n    struct Zombie {\n        string name;\n        uint dna;\n    }\n\n    Zombie[] public zombies;\n\n    function _createZombie(string _name, uint _dna) private {\n        uint id = zombies.push(Zombie(_name, _dna)) - 1;\n        emit NewZombie(id, _name, _dna);\n    }\n\n    function _generateRandomDna(string _str) private view returns (uint) {\n        uint rand = uint(keccak256(abi.encodePacked(_str)));\n        return rand % dnaModulus;\n    }\n\n    function createRandomZombie(string _name) public {\n        uint randDna = _generateRandomDna(_name);\n        _createZombie(_name, randDna);\n    }\n\n}"
+      }
+    ]
+  },
+  {
+    "lessonId": 2,
+    "track": "Solidity: Beginner to Intermediate Smart Contracts",
+    "siteTitle": "Зомби идут в атаку!",
+    "siteChapterCount": 15,
+    "repoEntryCount": 16,
+    "ruAvailable": true,
+    "codeRepoAvailable": true,
+    "focus": "Состояние и композиция контрактов: mappings, msg.sender, require, inheritance, import, storage/memory, интерфейсы.",
+    "chapters": [
+      {
+        "order": 1,
+        "enPath": "en/2/00-overview.md",
+        "ruPath": "ru/2/00-overview.md",
+        "enTitle": "Zombies Attack Their Victims",
+        "ruTitle": "Зомби идут в атаку!"
+      },
+      {
+        "order": 2,
+        "enPath": "en/2/1-overview.md",
+        "ruPath": "ru/2/1-overview.md",
+        "enTitle": "Lesson 2 Overview",
+        "ruTitle": "Обзор Урока 2"
+      },
+      {
+        "order": 3,
+        "enPath": "en/2/2-mappings.md",
+        "ruPath": "ru/2/2-mappings.md",
+        "enTitle": "Mappings and Addresses",
+        "ruTitle": "Адреса и соответствия"
+      },
+      {
+        "order": 4,
+        "enPath": "en/2/3-msgsender.md",
+        "ruPath": "ru/2/3-msgsender.md",
+        "enTitle": "Msg.sender",
+        "ruTitle": "Отправитель"
+      },
+      {
+        "order": 5,
+        "enPath": "en/2/4-require.md",
+        "ruPath": "ru/2/4-require.md",
+        "enTitle": "Require",
+        "ruTitle": "Требования"
+      },
+      {
+        "order": 6,
+        "enPath": "en/2/5-inheritance.md",
+        "ruPath": "ru/2/5-inheritance.md",
+        "enTitle": "Inheritance",
+        "ruTitle": "Наследование"
+      },
+      {
+        "order": 7,
+        "enPath": "en/2/6-importfiles.md",
+        "ruPath": "ru/2/6-importfiles.md",
+        "enTitle": "Import",
+        "ruTitle": "Импорт"
+      },
+      {
+        "order": 8,
+        "enPath": "en/2/7-storage.md",
+        "ruPath": "ru/2/7-storage.md",
+        "enTitle": "Storage vs Memory (Data location)",
+        "ruTitle": "Хранилище и память"
+      },
+      {
+        "order": 9,
+        "enPath": "en/2/8-feedandmultiply2.md",
+        "ruPath": "ru/2/8-feedandmultiply2.md",
+        "enTitle": "Zombie DNA",
+        "ruTitle": "ДНК Зомби"
+      },
+      {
+        "order": 10,
+        "enPath": "en/2/9-internalfunctions.md",
+        "ruPath": "ru/2/9-internalfunctions.md",
+        "enTitle": "More on Function Visibility",
+        "ruTitle": "Еще насчет видимости функций"
+      },
+      {
+        "order": 11,
+        "enPath": "en/2/10-interactingcontracts.md",
+        "ruPath": "ru/2/10-interactingcontracts.md",
+        "enTitle": "What Do Zombies Eat?",
+        "ruTitle": "Кем питаются зомби?"
+      },
+      {
+        "order": 12,
+        "enPath": "en/2/11-interactingcontracts2.md",
+        "ruPath": "ru/2/11-interactingcontracts2.md",
+        "enTitle": "Using an Interface",
+        "ruTitle": "Используем интерфейс"
+      },
+      {
+        "order": 13,
+        "enPath": "en/2/12-multiplereturns.md",
+        "ruPath": "ru/2/12-multiplereturns.md",
+        "enTitle": "Handling Multiple Return Values",
+        "ruTitle": "Работа с несколькими возвращаемыми значениями"
+      },
+      {
+        "order": 14,
+        "enPath": "en/2/13-kittygenes.md",
+        "ruPath": "ru/2/13-kittygenes.md",
+        "enTitle": "\"Bonus: Kitty Genes\"",
+        "ruTitle": "\"Бонус: гены котика\""
+      },
+      {
+        "order": 15,
+        "enPath": "en/2/14-wrappingitup.md",
+        "ruPath": "ru/2/14-wrappingitup.md",
+        "enTitle": "Wrapping It Up",
+        "ruTitle": "Подведем итог"
+      },
+      {
+        "order": 16,
+        "enPath": "en/2/15-lessoncomplete.md",
+        "ruPath": "ru/2/15-lessoncomplete.md",
+        "enTitle": "Lesson 2 Complete!",
+        "ruTitle": "Урок 2 завершен!"
+      }
+    ],
+    "summary": [
+      "Урок 2 переводит одиночный контракт в многопользовательскую модель: теперь у каждого зомби есть владелец, а у владельца — счётчик зомби.",
+      "Появляется композиция контрактов: отдельный `ZombieFeeding` наследует `ZombieFactory` и взаимодействует с внешним контрактом CryptoKitties через интерфейс.",
+      "Ключевой результат урока — понимание `mapping`, `msg.sender`, `require`, `storage`/`memory`, inheritance и внешних вызовов по интерфейсу."
+    ],
+    "mustKnow": [
+      "`mapping (uint => address)` и `mapping (address => uint)` как основа ownership-модели.",
+      "`msg.sender` как текущий актор транзакции и базовый способ авторизации.",
+      "`require(...)` для инвариантов, например «один бесплатный зомби на адрес».",
+      "Разница между `storage` и `memory`, особенно при работе со `struct`.",
+      "Интерфейс внешнего контракта и вызов `kittyContract.getKitty(...)`."
+    ],
+    "examTasks": [
+      "Добавить ownership-слой поверх существующего массива сущностей.",
+      "Запретить повторное создание стартового зомби через `require`.",
+      "Подключить внешний контракт по интерфейсу и обработать одно нужное поле из сложного возврата.",
+      "Написать функцию, которая комбинирует ДНК и создаёт новую сущность."
+    ],
+    "architecture": [
+      "`ZombieFactory` хранит базовое состояние и ownership.",
+      "`ZombieFeeding` добавляет бизнес-логику размножения.",
+      "`KittyInterface` описывает только тот внешний API, который нужен уроку."
+    ],
+    "snippets": [
+      {
+        "title": "Ownership и создание стартового зомби",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\ncontract ZombieFactory {\n\n    event NewZombie(uint zombieId, string name, uint dna);\n\n    uint dnaDigits = 16;\n    uint dnaModulus = 10 ** dnaDigits;\n\n    struct Zombie {\n        string name;\n        uint dna;\n    }\n\n    Zombie[] public zombies;\n\n    mapping (uint => address) public zombieToOwner;\n    mapping (address => uint) ownerZombieCount;\n\n    function _createZombie(string _name, uint _dna) internal {\n        uint id = zombies.push(Zombie(_name, _dna)) - 1;\n        zombieToOwner[id] = msg.sender;\n        ownerZombieCount[msg.sender]++;\n        emit NewZombie(id, _name, _dna);\n    }\n\n    function _generateRandomDna(string _str) private view returns (uint) {\n        uint rand = uint(keccak256(abi.encodePacked(_str)));\n        return rand % dnaModulus;\n    }\n\n    function createRandomZombie(string _name) public {\n        require(ownerZombieCount[msg.sender] == 0);\n        uint randDna = _generateRandomDna(_name);\n        randDna = randDna - randDna % 100;\n        _createZombie(_name, randDna);\n    }\n\n}"
+      },
+      {
+        "title": "Интерфейс CryptoKitties и кормление зомби",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\nimport \"./zombiefactory.sol\";\ncontract KittyInterface {\n  function getKitty(uint256 _id) external view returns (\n    bool isGestating,\n    bool isReady,\n    uint256 cooldownIndex,\n    uint256 nextActionAt,\n    uint256 siringWithId,\n    uint256 birthTime,\n    uint256 matronId,\n    uint256 sireId,\n    uint256 generation,\n    uint256 genes\n  );\n}\ncontract ZombieFeeding is ZombieFactory {\n\n  address ckAddress = 0x06012c8cf97BEaD5deAe237070F9587f8E7A266d;\n  KittyInterface kittyContract = KittyInterface(ckAddress);\n\n  function feedAndMultiply(uint _zombieId, uint _targetDna, string _species) public {\n    require(msg.sender == zombieToOwner[_zombieId]);\n    Zombie storage myZombie = zombies[_zombieId];\n    _targetDna = _targetDna % dnaModulus;\n    uint newDna = (myZombie.dna + _targetDna) / 2;\n    if (keccak256(abi.encodePacked(_species)) == keccak256(abi.encodePacked(\"kitty\"))) {\n      newDna = newDna - newDna % 100 + 99;\n    }\n    _createZombie(\"NoName\", newDna);\n  }\n\n  function feedOnKitty(uint _zombieId, uint _kittyId) public {\n    uint kittyDna;\n    (,,,,,,,,,kittyDna) = kittyContract.getKitty(_kittyId);\n    feedAndMultiply(_zombieId, kittyDna, \"kitty\");\n  }\n\n}"
+      }
+    ]
+  },
+  {
+    "lessonId": 3,
+    "track": "Solidity: Beginner to Intermediate Smart Contracts",
+    "siteTitle": "Продвинутые концепции Solidity",
+    "siteChapterCount": 14,
+    "repoEntryCount": 15,
+    "ruAvailable": true,
+    "codeRepoAvailable": true,
+    "focus": "Безопасность и эксплуатационные аспекты: ownable, модификаторы, gas, time units, cooldowns, циклы.",
+    "chapters": [
+      {
+        "order": 1,
+        "enPath": "en/3/00-overview.md",
+        "ruPath": "ru/3/00-overview.md",
+        "enTitle": "Advanced Solidity Concepts",
+        "ruTitle": "Продвинутые концепции Solidity"
+      },
+      {
+        "order": 2,
+        "enPath": "en/3/01-externaldependencies.md",
+        "ruPath": "ru/3/01-externaldependencies.md",
+        "enTitle": "Immutability of Contracts",
+        "ruTitle": "Неизменяемость контрактов"
+      },
+      {
+        "order": 3,
+        "enPath": "en/3/02-ownable.md",
+        "ruPath": "ru/3/02-ownable.md",
+        "enTitle": "Ownable Contracts",
+        "ruTitle": "Собственные контракты"
+      },
+      {
+        "order": 4,
+        "enPath": "en/3/03-onlyowner.md",
+        "ruPath": "ru/3/03-onlyowner.md",
+        "enTitle": "onlyOwner Function Modifier",
+        "ruTitle": "Модификатор функции onlyOwner (единственный владелец)"
+      },
+      {
+        "order": 5,
+        "enPath": "en/3/04-gas.md",
+        "ruPath": "ru/3/04-gas.md",
+        "enTitle": "Gas",
+        "ruTitle": "Газ"
+      },
+      {
+        "order": 6,
+        "enPath": "en/3/05-timeunits.md",
+        "ruPath": "ru/3/05-timeunits.md",
+        "enTitle": "Time Units",
+        "ruTitle": "Отрезки времени"
+      },
+      {
+        "order": 7,
+        "enPath": "en/3/06-zombiecooldowns.md",
+        "ruPath": "ru/3/06-zombiecooldowns.md",
+        "enTitle": "Zombie Cooldowns",
+        "ruTitle": "Перезарядка Зомби"
+      },
+      {
+        "order": 8,
+        "enPath": "en/3/07-zombiecooldowns2.md",
+        "ruPath": "ru/3/07-zombiecooldowns2.md",
+        "enTitle": "Public Functions & Security",
+        "ruTitle": "Открытые функции и безопасность"
+      },
+      {
+        "order": 9,
+        "enPath": "en/3/08-functionmodifiers.md",
+        "ruPath": "ru/3/08-functionmodifiers.md",
+        "enTitle": "More on Function Modifiers",
+        "ruTitle": "Еще о модификаторах функций"
+      },
+      {
+        "order": 10,
+        "enPath": "en/3/09-zombiemodifiers.md",
+        "ruPath": "ru/3/09-zombiemodifiers.md",
+        "enTitle": "Zombie Modifiers",
+        "ruTitle": "Модификаторы зомби"
+      },
+      {
+        "order": 11,
+        "enPath": "en/3/10-savinggasview.md",
+        "ruPath": "ru/3/10-savinggasview.md",
+        "enTitle": "Saving Gas With 'View' Functions",
+        "ruTitle": "Экономим газ с помощью функции 'View'"
+      },
+      {
+        "order": 12,
+        "enPath": "en/3/11-savinggasstorage.md",
+        "ruPath": "ru/3/11-savinggasstorage.md",
+        "enTitle": "Storage is Expensive",
+        "ruTitle": "Дорогое место в хранилище"
+      },
+      {
+        "order": 13,
+        "enPath": "en/3/12-forloops.md",
+        "ruPath": "ru/3/12-forloops.md",
+        "enTitle": "For Loops",
+        "ruTitle": "Циклы"
+      },
+      {
+        "order": 14,
+        "enPath": "en/3/13-wrappingitup.md",
+        "ruPath": "ru/3/13-wrappingitup.md",
+        "enTitle": "Wrapping It Up",
+        "ruTitle": "Подведем итог"
+      },
+      {
+        "order": 15,
+        "enPath": "en/3/14-lessoncomplete.md",
+        "ruPath": "ru/3/14-lessoncomplete.md",
+        "enTitle": "Lesson 3 Complete!",
+        "ruTitle": "Урок 3 завершен!"
+      }
+    ],
+    "summary": [
+      "Урок 3 посвящён тому, как превратить работающий контракт в более безопасный и удобный для эксплуатации.",
+      "Вводятся ownership-контракты, модификаторы, кулдауны, уровни и выборки по владельцу — это уже переход от демо-логики к паттернам реального DApp.",
+      "По сути это урок про контроль доступа, инварианты и цену операций в EVM."
+    ],
+    "mustKnow": [
+      "Паттерн `Ownable`: хранение владельца, `onlyOwner`, смена owner.",
+      "Модификаторы как переиспользуемый слой правил (`onlyOwner`, `aboveLevel`).",
+      "Зачем ограничивать мутацию контракта и выносить административные операции отдельным владельцам.",
+      "Как хранить дополнительные поля в `struct`: `level`, `readyTime`.",
+      "Как строить «read model» через `getZombiesByOwner` и почему она дорога по gas в on-chain вызове, но допустима для `view`."
+    ],
+    "examTasks": [
+      "Добавить административный ownership-контракт и подключить его через наследование.",
+      "Ограничить доступ к критичным функциям модификатором.",
+      "Добавить новые поля в `struct` и корректно инициализировать их при создании.",
+      "Написать функцию, которая проходит по массиву и собирает только сущности заданного владельца."
+    ],
+    "architecture": [
+      "`Ownable` — универсальный административный слой.",
+      "`ZombieFactory` расширяется до уровня gameplay-state: `level`, `readyTime`, `cooldownTime`.",
+      "`ZombieHelper` отвечает за gated-функции (`changeName`, `changeDna`) и выборки для UI."
+    ],
+    "snippets": [
+      {
+        "title": "Паттерн Ownable",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\n/**\n* @title Ownable\n* @dev The Ownable contract has an owner address, and provides basic authorization control\n* functions, this simplifies the implementation of \"user permissions\".\n*/\ncontract Ownable {\n  address private _owner;\n\n  event OwnershipTransferred(\n    address indexed previousOwner,\n    address indexed newOwner\n  );\n\n  /**\n  * @dev The Ownable constructor sets the original `owner` of the contract to the sender\n  * account.\n  */\n  constructor() internal {\n    _owner = msg.sender;\n    emit OwnershipTransferred(address(0), _owner);\n  }\n\n  /**\n  * @return the address of the owner.\n  */\n  function owner() public view returns(address) {\n    return _owner;\n  }\n\n  /**\n  * @dev Throws if called by any account other than the owner.\n  */\n  modifier onlyOwner() {\n    require(isOwner());\n    _;\n  }\n\n  /**\n  * @return true if `msg.sender` is the owner of the contract.\n  */\n  function isOwner() public view returns(bool) {\n    return msg.sender == _owner;\n  }\n\n  /**\n  * @dev Allows the current owner to relinquish control of the contract.\n  * @notice Renouncing to ownership will leave the contract without an owner.\n  * It will not be possible to call the functions with the `onlyOwner`\n  * modifier anymore.\n  */\n  function renounceOwnership() public onlyOwner {\n    emit OwnershipTransferred(_owner, address(0));\n    _owner = address(0);\n  }\n\n  /**\n  * @dev Allows the current owner to transfer control of the contract to a newOwner.\n  * @param newOwner The address to transfer ownership to.\n  */\n  function transferOwnership(address newOwner) public onlyOwner {\n    _transferOwnership(newOwner);\n  }\n\n  /**\n  * @dev Transfers control of the contract to a newOwner.\n  * @param newOwner The address to transfer ownership to.\n  */\n  function _transferOwnership(address newOwner) internal {\n    require(newOwner != address(0));\n    emit OwnershipTransferred(_owner, newOwner);\n    _owner = newOwner;\n  }\n}"
+      },
+      {
+        "title": "Новые поля состояния и базовая инициализация",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\nimport \"./ownable.sol\";\n\ncontract ZombieFactory is Ownable {\n\n    event NewZombie(uint zombieId, string name, uint dna);\n\n    uint dnaDigits = 16;\n    uint dnaModulus = 10 ** dnaDigits;\n    uint cooldownTime = 1 days;\n\n    struct Zombie {\n      string name;\n      uint dna;\n      uint32 level;\n      uint32 readyTime;\n    }\n\n    Zombie[] public zombies;\n\n    mapping (uint => address) public zombieToOwner;\n    mapping (address => uint) ownerZombieCount;\n\n    function _createZombie(string _name, uint _dna) internal {\n        uint id = zombies.push(Zombie(_name, _dna, 1, uint32(now + cooldownTime))) - 1;\n        zombieToOwner[id] = msg.sender;\n        ownerZombieCount[msg.sender]++;\n        emit NewZombie(id, _name, _dna);\n    }\n\n    function _generateRandomDna(string _str) private view returns (uint) {\n        uint rand = uint(keccak256(abi.encodePacked(_str)));\n        return rand % dnaModulus;\n    }\n\n    function createRandomZombie(string _name) public {\n        require(ownerZombieCount[msg.sender] == 0);\n        uint randDna = _generateRandomDna(_name);\n        randDna = randDna - randDna % 100;\n        _createZombie(_name, randDna);\n    }\n\n}"
+      },
+      {
+        "title": "Модификаторы уровня и выборка зомби владельца",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\nimport \"./zombiefeeding.sol\";\ncontract ZombieHelper is ZombieFeeding {\n\n  modifier aboveLevel(uint _level, uint _zombieId) {\n    require(zombies[_zombieId].level >= _level);\n    _;\n  }\n\n  function changeName(uint _zombieId, string _newName) external aboveLevel(2, _zombieId) {\n    require(msg.sender == zombieToOwner[_zombieId]);\n    zombies[_zombieId].name = _newName;\n  }\n\n  function changeDna(uint _zombieId, uint _newDna) external aboveLevel(20, _zombieId) {\n    require(msg.sender == zombieToOwner[_zombieId]);\n    zombies[_zombieId].dna = _newDna;\n  }\n\n  function getZombiesByOwner(address _owner) external view returns(uint[]) {\n    uint[] memory result = new uint[](ownerZombieCount[_owner]);\n    uint counter = 0;\n    for (uint i = 0; i < zombies.length; i++) {\n      if (zombieToOwner[i] == _owner) {\n        result[counter] = i;\n        counter++;\n      }\n    }\n    return result;\n  }\n\n}"
+      }
+    ]
+  },
+  {
+    "lessonId": 4,
+    "track": "Solidity: Beginner to Intermediate Smart Contracts",
+    "siteTitle": "Боевая система Зомби",
+    "siteChapterCount": 13,
+    "repoEntryCount": 14,
+    "ruAvailable": true,
+    "codeRepoAvailable": true,
+    "focus": "Игровая логика и монетизация: payable-функции, withdraw, случайность и пошаговая реализация battle system.",
+    "chapters": [
+      {
+        "order": 1,
+        "enPath": "en/4/00-overview.md",
+        "ruPath": "ru/4/00-overview.md",
+        "enTitle": "Zombie Battle System",
+        "ruTitle": "Боевая система Зомби"
+      },
+      {
+        "order": 2,
+        "enPath": "en/4/payable.md",
+        "ruPath": "ru/4/payable.md",
+        "enTitle": "Payable",
+        "ruTitle": "Платные опции"
+      },
+      {
+        "order": 3,
+        "enPath": "en/4/withdraw.md",
+        "ruPath": "ru/4/withdraw.md",
+        "enTitle": "Withdraws",
+        "ruTitle": "Вывод средств"
+      },
+      {
+        "order": 4,
+        "enPath": "en/4/battle-01.md",
+        "ruPath": "ru/4/battle-01.md",
+        "enTitle": "Zombie Battles",
+        "ruTitle": "Битвы Зомби"
+      },
+      {
+        "order": 5,
+        "enPath": "en/4/battle-02.md",
+        "ruPath": "ru/4/battle-02.md",
+        "enTitle": "Random Numbers",
+        "ruTitle": "Случайные числа"
+      },
+      {
+        "order": 6,
+        "enPath": "en/4/battle-03.md",
+        "ruPath": "ru/4/battle-03.md",
+        "enTitle": "Zombie Fightin'",
+        "ruTitle": "Зомби сражаются"
+      },
+      {
+        "order": 7,
+        "enPath": "en/4/battle-04.md",
+        "ruPath": "ru/4/battle-04.md",
+        "enTitle": "Refactoring Common Logic",
+        "ruTitle": "Общая логика рефакторинга"
+      },
+      {
+        "order": 8,
+        "enPath": "en/4/battle-05.md",
+        "ruPath": "ru/4/battle-05.md",
+        "enTitle": "More Refactoring",
+        "ruTitle": "Еще о рефакторинге"
+      },
+      {
+        "order": 9,
+        "enPath": "en/4/battle-06.md",
+        "ruPath": "ru/4/battle-06.md",
+        "enTitle": "Back to Attack!",
+        "ruTitle": "Снова в атаку!"
+      },
+      {
+        "order": 10,
+        "enPath": "en/4/battle-07.md",
+        "ruPath": "ru/4/battle-07.md",
+        "enTitle": "Zombie Wins and Losses",
+        "ruTitle": "Победы и поражения зомби"
+      },
+      {
+        "order": 11,
+        "enPath": "en/4/battle-08.md",
+        "ruPath": "ru/4/battle-08.md",
+        "enTitle": "Zombie Victory 😄",
+        "ruTitle": "Победа Зомби! 😄"
+      },
+      {
+        "order": 12,
+        "enPath": "en/4/battle-09.md",
+        "ruPath": "ru/4/battle-09.md",
+        "enTitle": "Zombie Loss 😞",
+        "ruTitle": "Проигрыш Зомби 😞"
+      },
+      {
+        "order": 13,
+        "enPath": "en/4/wrappingitup.md",
+        "ruPath": "ru/4/wrappingitup.md",
+        "enTitle": "Wrapping It Up",
+        "ruTitle": "Подведем итог"
+      },
+      {
+        "order": 14,
+        "enPath": "en/4/lessoncomplete.md",
+        "ruPath": "ru/4/lessoncomplete.md",
+        "enTitle": "Lesson 4 Complete!",
+        "ruTitle": "Урок 4 завершен!"
+      }
+    ],
+    "summary": [
+      "Урок 4 добавляет монетизацию и core gameplay: платное повышение уровня, вывод ETH владельцу и функцию боя.",
+      "Здесь важно понять границы безопасности: `payable`, `msg.value`, вывод средств, а также слабость on-chain случайности на старом Solidity.",
+      "В терминах экзамена этот урок закрывает типовые CRUD-операции со state + платёжный путь + обновление нескольких полей в одной транзакции."
+    ],
+    "mustKnow": [
+      "`payable`-функции, `msg.value` и хранение ETH на балансе контракта.",
+      "Шаблон `withdraw` с переводом средств владельцу.",
+      "Примитивная on-chain случайность через хеш от времени, sender и nonce — и почему это только учебный пример.",
+      "Обновление нескольких связанных полей (`winCount`, `lossCount`, `level`, `readyTime`) после боя.",
+      "Повторное использование уже существующей логики размножения внутри боевой функции."
+    ],
+    "examTasks": [
+      "Сделать функцию платной и проверить точное значение `msg.value`.",
+      "Добавить административный вывод средств.",
+      "Реализовать псевдослучайный исход и корректно обновить состояние обеих сущностей.",
+      "Связать новый gameplay-метод с уже существующим методом создания нового зомби."
+    ],
+    "architecture": [
+      "`ZombieHelper` добавляет монетизацию (`levelUpFee`, `levelUp`, `withdraw`).",
+      "`ZombieAttack` добавляет battle loop и статистику боёв.",
+      "Вся логика остаётся в одном семействе наследуемых контрактов, что важно для понимания линейной композиции уроков."
+    ],
+    "snippets": [
+      {
+        "title": "Платные функции, withdraw и level gating",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\nimport \"./zombiefeeding.sol\";\n\ncontract ZombieHelper is ZombieFeeding {\n\n  uint levelUpFee = 0.001 ether;\n\n  modifier aboveLevel(uint _level, uint _zombieId) {\n    require(zombies[_zombieId].level >= _level);\n    _;\n  }\n\n  function withdraw() external onlyOwner {\n    address _owner = owner();\n    _owner.transfer(address(this).balance);\n  }\n\n  function setLevelUpFee(uint _fee) external onlyOwner {\n    levelUpFee = _fee;\n  }\n\n  function levelUp(uint _zombieId) external payable {\n    require(msg.value == levelUpFee);\n    zombies[_zombieId].level++;\n  }\n\n  function changeName(uint _zombieId, string _newName) external aboveLevel(2, _zombieId) ownerOf(_zombieId) {\n    zombies[_zombieId].name = _newName;\n  }\n\n  function changeDna(uint _zombieId, uint _newDna) external aboveLevel(20, _zombieId) ownerOf(_zombieId) {\n    zombies[_zombieId].dna = _newDna;\n  }\n\n  function getZombiesByOwner(address _owner) external view returns(uint[]) {\n    uint[] memory result = new uint[](ownerZombieCount[_owner]);\n    uint counter = 0;\n    for (uint i = 0; i < zombies.length; i++) {\n      if (zombieToOwner[i] == _owner) {\n        result[counter] = i;\n        counter++;\n      }\n    }\n    return result;\n  }\n\n}"
+      },
+      {
+        "title": "Бой и псевдослучайный исход",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\nimport \"./zombiehelper.sol\";\ncontract ZombieAttack is ZombieHelper {\n  uint randNonce = 0;\n  uint attackVictoryProbability = 70;\n\n  function randMod(uint _modulus) internal returns(uint) {\n    randNonce++;\n    return uint(keccak256(abi.encodePacked(now, msg.sender, randNonce))) % _modulus;\n  }\n\n  function attack(uint _zombieId, uint _targetId) external ownerOf(_zombieId) {\n    Zombie storage myZombie = zombies[_zombieId];\n    Zombie storage enemyZombie = zombies[_targetId];\n    uint rand = randMod(100);\n    if (rand <= attackVictoryProbability) {\n      myZombie.winCount++;\n      myZombie.level++;\n      enemyZombie.lossCount++;\n      feedAndMultiply(_zombieId, enemyZombie.dna, \"zombie\");\n    } else {\n      myZombie.lossCount++;\n      enemyZombie.winCount++;\n      _triggerCooldown(myZombie);\n    }\n  }\n}"
+      }
+    ]
+  },
+  {
+    "lessonId": 5,
+    "track": "Solidity: Beginner to Intermediate Smart Contracts",
+    "siteTitle": "ERC721 & Crypto-Collectibles",
+    "siteChapterCount": 15,
+    "repoEntryCount": 16,
+    "ruAvailable": true,
+    "codeRepoAvailable": true,
+    "focus": "Токенизация актива: ERC721, ownership, transfer/approve, SafeMath, комментарии и финализация collectible-модели.",
+    "chapters": [
+      {
+        "order": 1,
+        "enPath": "en/5/00-overview.md",
+        "ruPath": "ru/5/00-overview.md",
+        "enTitle": "ERC721 & Crypto-Collectibles",
+        "ruTitle": "ERC721 & Крипто-Коллекционирование"
+      },
+      {
+        "order": 2,
+        "enPath": "en/5/01-erc721-1.md",
+        "ruPath": "ru/5/01-erc721-1.md",
+        "enTitle": "Tokens on Ethereum",
+        "ruTitle": "Токены на Ethereum"
+      },
+      {
+        "order": 3,
+        "enPath": "en/5/02-erc721-2.md",
+        "ruPath": "ru/5/02-erc721-2.md",
+        "enTitle": "ERC721 Standard, Multiple Inheritance",
+        "ruTitle": "ERC721 Стандарт, Mножественное наследование"
+      },
+      {
+        "order": 4,
+        "enPath": "en/5/03-erc721-3.md",
+        "ruPath": "ru/5/03-erc721-3.md",
+        "enTitle": "balanceOf & ownerOf",
+        "ruTitle": "balanceOf & ownerOf"
+      },
+      {
+        "order": 5,
+        "enPath": "en/5/04-erc721-4.md",
+        "ruPath": "ru/5/04-erc721-4.md",
+        "enTitle": "Refactoring",
+        "ruTitle": "Рефакторинг"
+      },
+      {
+        "order": 6,
+        "enPath": "en/5/05-erc721-5.md",
+        "ruPath": "ru/5/05-erc721-5.md",
+        "enTitle": "\"ERC721: Transfer Logic\"",
+        "ruTitle": "\"ERC721: Логика перевода\""
+      },
+      {
+        "order": 7,
+        "enPath": "en/5/06-erc721-6.md",
+        "ruPath": "ru/5/06-erc721-6.md",
+        "enTitle": "\"ERC721: Transfer Cont'd\"",
+        "ruTitle": "\"ERC721: Перевод. Продолжение...\""
+      },
+      {
+        "order": 8,
+        "enPath": "en/5/07-erc721-7.md",
+        "ruPath": "ru/5/07-erc721-7.md",
+        "enTitle": "\"ERC721: Approve\"",
+        "ruTitle": "\"ERC721: Approve\""
+      },
+      {
+        "order": 9,
+        "enPath": "en/5/08-erc721-8.md",
+        "ruPath": "ru/5/08-erc721-8.md",
+        "enTitle": "\"ERC721: Approve\"",
+        "ruTitle": "\"ERC721: Approve\""
+      },
+      {
+        "order": 10,
+        "enPath": "en/5/09-safemath-1.md",
+        "ruPath": "ru/5/09-safemath-1.md",
+        "enTitle": "Preventing Overflows",
+        "ruTitle": "Предотвращение переполнений"
+      },
+      {
+        "order": 11,
+        "enPath": "en/5/10-safemath-2.md",
+        "ruPath": "ru/5/10-safemath-2.md",
+        "enTitle": "SafeMath Part 2",
+        "ruTitle": "SafeMath, Часть 2"
+      },
+      {
+        "order": 12,
+        "enPath": "en/5/11-safemath-3.md",
+        "ruPath": "ru/5/11-safemath-3.md",
+        "enTitle": "SafeMath Part 3",
+        "ruTitle": "SafeMath, Часть 3"
+      },
+      {
+        "order": 13,
+        "enPath": "en/5/12-safemath-4.md",
+        "ruPath": "ru/5/12-safemath-4.md",
+        "enTitle": "SafeMath Part 4",
+        "ruTitle": "SafeMath, Часть 4"
+      },
+      {
+        "order": 14,
+        "enPath": "en/5/13-comments.md",
+        "ruPath": "ru/5/13-comments.md",
+        "enTitle": "Comments",
+        "ruTitle": "Комментарии"
+      },
+      {
+        "order": 15,
+        "enPath": "en/5/14-wrappingitup.md",
+        "ruPath": "ru/5/14-wrappingitup.md",
+        "enTitle": "Wrapping It Up",
+        "ruTitle": "Завершение"
+      },
+      {
+        "order": 16,
+        "enPath": "en/5/15-lessoncomplete.md",
+        "ruPath": "ru/5/15-lessoncomplete.md",
+        "enTitle": "Lesson 5 Complete!",
+        "ruTitle": "Урок 5 Завершен!"
+      }
+    ],
+    "summary": [
+      "Урок 5 превращает зомби из внутренней структуры игры в токенизируемый актив с интерфейсом ERC721.",
+      "Главная идея — отделить стандартный внешний API (`balanceOf`, `ownerOf`, `transferFrom`, `approve`) от внутреннего хранения и безопасного обновления балансов.",
+      "Вместе с этим урок вводит `SafeMath`, то есть тему арифметической безопасности и библиотек."
+    ],
+    "mustKnow": [
+      "Минимальный интерфейс ERC721 и смысл событий `Transfer` и `Approval`.",
+      "Approval-модель: владелец может делегировать право передачи токена.",
+      "Отдельная внутренняя `_transfer` как единая точка изменения ownership.",
+      "Подключение библиотек через `using SafeMath for uint256;`.",
+      "Почему арифметика на старом Solidity требует явной защиты от переполнения/underflow."
+    ],
+    "examTasks": [
+      "Описать интерфейс токена и реализовать обязательные методы ownership.",
+      "Сделать approval + transfer flow с проверкой прав.",
+      "Вынести обновление балансов в отдельную внутреннюю функцию.",
+      "Подключить и применить `SafeMath` к счётчикам."
+    ],
+    "architecture": [
+      "`ERC721` — внешний контракт-интерфейс стандарта.",
+      "`SafeMath` — библиотека для `uint256`, `uint32`, `uint16`.",
+      "`ZombieOwnership` — адаптер между внутренним game-state и внешним token API."
+    ],
+    "snippets": [
+      {
+        "title": "Минимальный интерфейс ERC721",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\ncontract ERC721 {\n  event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);\n  event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);\n\n  function balanceOf(address _owner) external view returns (uint256);\n  function ownerOf(uint256 _tokenId) external view returns (address);\n  function transferFrom(address _from, address _to, uint256 _tokenId) external payable;\n  function approve(address _approved, uint256 _tokenId) external payable;\n}"
+      },
+      {
+        "title": "Библиотека SafeMath",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\n/**\n * @title SafeMath\n * @dev Math operations with safety checks that throw on error\n */\nlibrary SafeMath {\n\n  /**\n  * @dev Multiplies two numbers, throws on overflow.\n  */\n  function mul(uint256 a, uint256 b) internal pure returns (uint256) {\n    if (a == 0) {\n      return 0;\n    }\n    uint256 c = a * b;\n    assert(c / a == b);\n    return c;\n  }\n\n  /**\n  * @dev Integer division of two numbers, truncating the quotient.\n  */\n  function div(uint256 a, uint256 b) internal pure returns (uint256) {\n    // assert(b > 0); // Solidity automatically throws when dividing by 0\n    uint256 c = a / b;\n    // assert(a == b * c + a % b); // There is no case in which this doesn't hold\n    return c;\n  }\n\n  /**\n  * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).\n  */\n  function sub(uint256 a, uint256 b) internal pure returns (uint256) {\n    assert(b <= a);\n    return a - b;\n  }\n\n  /**\n  * @dev Adds two numbers, throws on overflow.\n  */\n  function add(uint256 a, uint256 b) internal pure returns (uint256) {\n    uint256 c = a + b;\n    assert(c >= a);\n    return c;\n  }\n}\n\n/**\n * @title SafeMath32\n * @dev SafeMath library implemented for uint32\n */\nlibrary SafeMath32 {\n\n  function mul(uint32 a, uint32 b) internal pure returns (uint32) {\n    if (a == 0) {\n      return 0;\n    }\n    uint32 c = a * b;\n    assert(c / a == b);\n    return c;\n  }\n\n  function div(uint32 a, uint32 b) internal pure returns (uint32) {\n    // assert(b > 0); // Solidity automatically throws when dividing by 0\n    uint32 c = a / b;\n    // assert(a == b * c + a % b); // There is no case in which this doesn't hold\n    return c;\n  }\n\n  function sub(uint32 a, uint32 b) internal pure returns (uint32) {\n    assert(b <= a);\n    return a - b;\n  }\n\n  function add(uint32 a, uint32 b) internal pure returns (uint32) {\n    uint32 c = a + b;\n    assert(c >= a);\n    return c;\n  }\n}\n\n/**\n * @title SafeMath16\n * @dev SafeMath library implemented for uint16\n */\nlibrary SafeMath16 {\n\n  function mul(uint16 a, uint16 b) internal pure returns (uint16) {\n    if (a == 0) {\n      return 0;\n    }\n    uint16 c = a * b;\n    assert(c / a == b);\n    return c;\n  }\n\n  function div(uint16 a, uint16 b) internal pure returns (uint16) {\n    // assert(b > 0); // Solidity automatically throws when dividing by 0\n    uint16 c = a / b;\n    // assert(a == b * c + a % b); // There is no case in which this doesn't hold\n    return c;\n  }\n\n  function sub(uint16 a, uint16 b) internal pure returns (uint16) {\n    assert(b <= a);\n    return a - b;\n  }\n\n  function add(uint16 a, uint16 b) internal pure returns (uint16) {\n    uint16 c = a + b;\n    assert(c >= a);\n    return c;\n  }\n}"
+      },
+      {
+        "title": "Ownership + transfer/approve для Zombie token",
+        "language": "sol",
+        "code": "pragma solidity ^0.4.25;\n\nimport \"./zombieattack.sol\";\nimport \"./erc721.sol\";\nimport \"./safemath.sol\";\n\ncontract ZombieOwnership is ZombieAttack, ERC721 {\n\n  using SafeMath for uint256;\n\n  mapping (uint => address) zombieApprovals;\n\n  function balanceOf(address _owner) external view returns (uint256) {\n    return ownerZombieCount[_owner];\n  }\n\n  function ownerOf(uint256 _tokenId) external view returns (address) {\n    return zombieToOwner[_tokenId];\n  }\n\n  function _transfer(address _from, address _to, uint256 _tokenId) private {\n    ownerZombieCount[_to] = ownerZombieCount[_to].add(1);\n    ownerZombieCount[msg.sender] = ownerZombieCount[msg.sender].sub(1);\n    zombieToOwner[_tokenId] = _to;\n    emit Transfer(_from, _to, _tokenId);\n  }\n\n  function transferFrom(address _from, address _to, uint256 _tokenId) external payable {\n      require (zombieToOwner[_tokenId] == msg.sender || zombieApprovals[_tokenId] == msg.sender);\n      _transfer(_from, _to, _tokenId);\n    }\n\n  function approve(address _approved, uint256 _tokenId) external payable onlyOwnerOf(_tokenId) {\n      zombieApprovals[_tokenId] = _approved;\n      emit Approval(msg.sender, _approved, _tokenId);\n    }\n\n}"
+      }
+    ]
+  },
+  {
+    "lessonId": 6,
+    "track": "Solidity: Beginner to Intermediate Smart Contracts",
+    "siteTitle": "App Front-ends & Web3.js",
+    "siteChapterCount": 11,
+    "repoEntryCount": 12,
+    "ruAvailable": false,
+    "codeRepoAvailable": true,
+    "focus": "Интеграция фронтенда: Web3.js, ABI, чтение данных контракта, UI-взаимодействие и базовая клиентская логика.",
+    "chapters": [
+      {
+        "order": 1,
+        "enPath": "en/6/00-overview.md",
+        "ruPath": null,
+        "enTitle": "App Front-ends & Web3.js",
+        "ruTitle": null
+      },
+      {
+        "order": 2,
+        "enPath": "en/6/01.md",
+        "ruPath": null,
+        "enTitle": "Intro to Web3.js",
+        "ruTitle": null
+      },
+      {
+        "order": 3,
+        "enPath": "en/6/02.md",
+        "ruPath": null,
+        "enTitle": "Web3 Providers",
+        "ruTitle": null
+      },
+      {
+        "order": 4,
+        "enPath": "en/6/03.md",
+        "ruPath": null,
+        "enTitle": "Talking to Contracts",
+        "ruTitle": null
+      },
+      {
+        "order": 5,
+        "enPath": "en/6/04.md",
+        "ruPath": null,
+        "enTitle": "Calling Contract Functions",
+        "ruTitle": null
+      },
+      {
+        "order": 6,
+        "enPath": "en/6/05.md",
+        "ruPath": null,
+        "enTitle": "Metamask & Accounts",
+        "ruTitle": null
+      },
+      {
+        "order": 7,
+        "enPath": "en/6/06.md",
+        "ruPath": null,
+        "enTitle": "Displaying our Zombie Army",
+        "ruTitle": null
+      },
+      {
+        "order": 8,
+        "enPath": "en/6/07.md",
+        "ruPath": null,
+        "enTitle": "Sending Transactions",
+        "ruTitle": null
+      },
+      {
+        "order": 9,
+        "enPath": "en/6/08.md",
+        "ruPath": null,
+        "enTitle": "Calling Payable Functions",
+        "ruTitle": null
+      },
+      {
+        "order": 10,
+        "enPath": "en/6/09.md",
+        "ruPath": null,
+        "enTitle": "Subscribing to Events",
+        "ruTitle": null
+      },
+      {
+        "order": 11,
+        "enPath": "en/6/10-wrappingitup.md",
+        "ruPath": null,
+        "enTitle": "Wrapping It Up",
+        "ruTitle": null
+      },
+      {
+        "order": 12,
+        "enPath": "en/6/lessoncomplete.md",
+        "ruPath": null,
+        "enTitle": "Lesson 6 Complete!",
+        "ruTitle": null
+      }
+    ],
+    "summary": [
+      "Урок 6 переносит внимание с Solidity на клиентское приложение, которое подключается к уже написанному контракту.",
+      "Нужно понимать разницу между `call` и `send`, работу ABI, провайдера, аккаунта пользователя и подписки на события.",
+      "С практической точки зрения это урок про то, как превратить смарт-контракт в usable dApp: прочитать данные, показать их в UI и инициировать транзакции."
+    ],
+    "mustKnow": [
+      "Что такое ABI и почему фронтенд не может работать с контрактом без него.",
+      "Создание экземпляра `new web3.eth.Contract(abi, address)`.",
+      "Разница между `call()` для чтения и `send({...})` для записи в блокчейн.",
+      "Работа с текущим аккаунтом MetaMask и обновление UI при его смене.",
+      "Подписка на `Transfer` и реактивное обновление списка зомби."
+    ],
+    "examTasks": [
+      "Поднять фронтенд, который читает зомби по адресу владельца.",
+      "Отправить транзакцию `createRandomZombie`, `feedOnKitty` или `levelUp` с корректным `from` и, где нужно, `value`.",
+      "Подписаться на `Transfer` и по событию перезагрузить пользовательские данные.",
+      "Объяснить, где нужен ABI и почему без провайдера dApp не может отправлять транзакции."
+    ],
+    "architecture": [
+      "`cryptozombies_abi.js` — ABI опубликованного контракта.",
+      "`index.html` — минимальный фронтенд на jQuery + Web3.js.",
+      "Поток данных: provider -> account -> contract instance -> call/send -> UI update."
+    ],
+    "snippets": [
+      {
+        "title": "Инициализация контракта и подписка на события",
+        "language": "js",
+        "code": "function startApp() {\n      var cryptoZombiesAddress = \"YOUR_CONTRACT_ADDRESS\";\n      cryptoZombies = new web3js.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);\n\n      var accountInterval = setInterval(function () {\n\n        if (web3.eth.accounts[0] !== userAccount) {\n          userAccount = web3.eth.accounts[0];\n\n          getZombiesByOwner(userAccount)\n            .then(displayZombies);\n        }\n      }, 100);\n\n      cryptoZombies.events.Transfer({ filter: { _to: userAccount } })\n        .on(\"data\", function (event) {\n          let data = event.returnValues;\n          getZombiesByOwner(userAccount).then(displayZombies);\n        }).on(\"error\", console.error);\n    }"
+      },
+      {
+        "title": "Отправка createRandomZombie",
+        "language": "js",
+        "code": "function createRandomZombie(name) {\n\n\n      $(\"#txStatus\").text(\"Creating new zombie on the blockchain. This may take a while...\");\n\n      return cryptoZombies.methods.createRandomZombie(name)\n        .send({ from: userAccount })\n        .on(\"receipt\", function (receipt) {\n          $(\"#txStatus\").text(\"Successfully created \" + name + \"!\");\n\n          getZombiesByOwner(userAccount).then(displayZombies);\n        })\n        .on(\"error\", function (error) {\n\n          $(\"#txStatus\").text(error);\n        });\n    }"
+      },
+      {
+        "title": "Отправка feedOnKitty",
+        "language": "js",
+        "code": "function feedOnKitty(zombieId, kittyId) {\n      $(\"#txStatus\").text(\"Eating a kitty. This may take a while...\");\n      return cryptoZombies.methods.feedOnKitty(zombieId, kittyId)\n        .send({ from: userAccount })\n        .on(\"receipt\", function (receipt) {\n          $(\"#txStatus\").text(\"Ate a kitty and spawned a new Zombie!\");\n          getZombiesByOwner(userAccount).then(displayZombies);\n        })\n        .on(\"error\", function (error) {\n          $(\"#txStatus\").text(error);\n        });\n    }"
+      },
+      {
+        "title": "Платная транзакция levelUp",
+        "language": "js",
+        "code": "function levelUp(zombieId) {\n      $(\"#txStatus\").text(\"Leveling up your zombie...\");\n      return cryptoZombies.methods.levelUp(zombieId)\n        .send({ from: userAccount, value: web3.utils.toWei(\"0.001\", \"ether\") })\n        .on(\"receipt\", function (receipt) {\n          $(\"#txStatus\").text(\"Power overwhelming! Zombie successfully leveled up\");\n        })\n        .on(\"error\", function (error) {\n          $(\"#txStatus\").text(error);\n        });\n    }"
+      },
+      {
+        "title": "Чтение данных контракта",
+        "language": "js",
+        "code": "function getZombieDetails(id) {\n      return cryptoZombies.methods.zombies(id).call()\n    }\n\n    function zombieToOwner(id) {\n      return cryptoZombies.methods.zombieToOwner(id).call()\n    }\n\n    function getZombiesByOwner(owner) {\n      return cryptoZombies.methods.getZombiesByOwner(owner).call()\n    }"
+      },
+      {
+        "title": "Подключение к web3-провайдеру",
+        "language": "js",
+        "code": "window.addEventListener('load', function () {\n\n\n      if (typeof web3 !== 'undefined') {\n\n        web3js = new Web3(web3.currentProvider);\n      } else {\n\n\n      }\n\n\n      startApp()\n\n    })"
+      }
+    ]
+  }
+]

@@ -1,0 +1,811 @@
+{
+  "trackTitle": "Advanced Solidity: Get In-depth Knowledge",
+  "includedLessons": [
+    10,
+    11,
+    14,
+    15,
+    16
+  ],
+  "missingLessons": [
+    12,
+    13
+  ],
+  "sourceNotes": {
+    "ruAvailable": false,
+    "codeRepoCoverage": {
+      "10": "partial",
+      "11": "partial",
+      "14": "missing",
+      "15": "missing",
+      "16": "missing"
+    }
+  },
+  "lessons": [
+    {
+      "lessonNumber": 10,
+      "trackTitle": "Advanced Solidity: Get In-depth Knowledge",
+      "lessonTitle": "Deploying DApps with Truffle",
+      "siteChapterCount": 11,
+      "repoElementCount": 12,
+      "ruAvailable": false,
+      "codeRepoAvailable": true,
+      "codeRepoNotes": "В `../cryptozombies-lesson-code/lesson-10/` есть только часть sample code: `chapter-4/contracts/2_crypto_zombies.js`, `chapter-5/truffle.js` и `chapter-8/truffle.js`. Полного зеркала всех глав нет. Русская локаль `ru/10/` отсутствует.",
+      "summary": "Урок 10 учит оборачивать существующий Solidity-проект в workflow Truffle и деплоить его в несколько сетей. Нужно понять структуру проекта Truffle, этап компиляции в ABI/bytecode artifacts, migrations, конфигурацию сетей через `HDWalletProvider` и Infura, а затем перенести тот же deploy flow на Loom testnet и Basechain через `LoomTruffleProvider`. Практический итог урока — deployable контракт `CryptoZombies`, migration script и `truffle.js`, из которого можно деплоить в Rinkeby, Loom testnet и Basechain.",
+      "mustKnow": [
+        "Что создаёт `truffle init` и почему Truffle ожидает стандартную структуру `contracts/`, `migrations/`, `test/` и config file.",
+        "Почему Solidity-код нужно компилировать до деплоя и что build artifacts содержат bytecode, ABI и deployment metadata.",
+        "Что такое migration script, почему migrations выполняются по порядку и как используется `deployer.deploy(...)`.",
+        "Как `truffle-hdwallet-provider` связывает mnemonic и Infura URL, чтобы Truffle мог подписывать Ethereum-транзакции.",
+        "Как описывать отдельные network blocks для `mainnet` и `rinkeby`, включая `network_id: 4` для Rinkeby.",
+        "Как Loom deploy повторяет Ethereum deploy через `loom-truffle-provider`, `chainId`, `writeUrl`, `readUrl` и private key.",
+        "Почему секреты нельзя хранить в коммитах и как пример Basechain переносит private key в отдельный файл.",
+        "Какие команды соответствуют целевым сетям: `truffle migrate --network rinkeby`, `--network loom_testnet`, `--network basechain`."
+      ],
+      "keyConcepts": [
+        "структура проекта и соглашения Truffle",
+        "компиляция Solidity в ABI/bytecode artifacts",
+        "migration scripts и упорядоченный deploy",
+        "HDWalletProvider + Infura для Ethereum deploy",
+        "Rinkeby как безопасная testnet перед mainnet",
+        "LoomTruffleProvider и деплой в Loom",
+        "загрузка private key из файла для Basechain"
+      ],
+      "examTasks": [
+        "Объяснить назначение стандартных каталогов и файлов, которые создаёт `truffle init`, и почему их нельзя произвольно переименовывать.",
+        "По данному `CryptoZombies.sol` написать migration file, который деплоит контракт через Truffle.",
+        "Объяснить, что создаёт `truffle compile` и зачем эти артефакты нужны JavaScript-части и деплою.",
+        "Дополнить `truffle.js` так, чтобы Rinkeby использовал `HDWalletProvider` и правильный `network_id`.",
+        "Сравнить deploy в Ethereum/Rinkeby и Loom testnet: что остаётся одинаковым во workflow, а что меняется в provider/config.",
+        "Показать последовательность команд для деплоя сначала в Rinkeby, затем в Loom testnet, и объяснить, почему mainnet оставляют напоследок.",
+        "Убрать hardcoded private key из `truffle.js` и загрузить его из файла.",
+        "Объяснить, почему в уроке Loom предлагается как более подходящая сеть для user-facing игры, чем Ethereum mainnet."
+      ],
+      "checklist": [
+        "Я могу объяснить структуру проекта Truffle и назначение каждого каталога.",
+        "Я могу создать обёрточный контракт `CryptoZombies` и скомпилировать проект через Truffle.",
+        "Я могу написать migration script для деплоя `CryptoZombies`.",
+        "Я могу настроить `truffle.js` для Ethereum mainnet и Rinkeby через `HDWalletProvider`.",
+        "Я помню, что у Rinkeby `network_id = 4`, и понимаю, зачем сначала деплоить в testnet.",
+        "Я могу добавить Loom testnet с `LoomTruffleProvider`, `chainId`, RPC/query URL и private key.",
+        "Я понимаю, почему секреты нельзя коммитить, и могу вынести Basechain private key в файл.",
+        "Я могу выбрать правильную команду `truffle migrate --network ...` для нужной сети."
+      ],
+      "snippets": [
+        {
+          "title": "Обёртка над игрой для деплоя",
+          "language": "solidity",
+          "sourcePath": "en/10/03.md",
+          "code": "pragma solidity ^0.4.24;\n\nimport \"./zombieownership.sol\";\n\ncontract CryptoZombies is ZombieOwnership\n    {\n\n    }"
+        },
+        {
+          "title": "Migration script для деплоя CryptoZombies",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-10/chapter-4/contracts/2_crypto_zombies.js",
+          "code": "var CryptoZombies = artifacts.require(\"./CryptoZombies.sol\");\nmodule.exports = function(deployer) {\n  deployer.deploy(CryptoZombies);\n};"
+        },
+        {
+          "title": "Конфигурация Ethereum-сетей через HDWalletProvider",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-10/chapter-5/truffle.js",
+          "code": "const HDWalletProvider = require(\"truffle-hdwallet-provider\");\n\nconst mnemonic = \"YOUR_MNEMONIC\";\n\nmodule.exports = {\n\n    networks: {\n\n        mainnet: {\n            provider: function () {\n\n                return new HDWalletProvider(mnemonic, \"https://mainnet.infura.io/v3/YOUR_TOKEN\")\n            },\n            network_id: \"1\"\n        },\n\n        rinkeby: {\n\n            provider: function () {\n\n                return new HDWalletProvider(mnemonic, \"https://rinkeby.infura.io/v3/YOUR_TOKEN\")\n            },\n\n            network_id: 4\n        }\n    }\n};"
+        },
+        {
+          "title": "Блок конфигурации Loom testnet",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-10/chapter-8/truffle.js",
+          "code": "loom_testnet: {\n  provider: function() {\n      const privateKey = 'YOUR_PRIVATE_KEY'\n      const chainId = 'extdev-plasma-us1';\n      const writeUrl = 'http://extdev-plasma-us1.dappchains.com:80/rpc';\n      const readUrl = 'http://extdev-plasma-us1.dappchains.com:80/query';;\n      return new LoomTruffleProvider(chainId, writeUrl, readUrl, privateKey)\n  },\n  network_id: '9545242630824'\n}"
+        },
+        {
+          "title": "Хелпер для загрузки private key Basechain",
+          "language": "javascript",
+          "sourcePath": "en/10/10.md",
+          "code": "function getLoomProviderWithPrivateKey (privateKeyPath, chainId, writeUrl, readUrl) {\n  const privateKey = readFileSync(privateKeyPath, 'utf-8');\n  return new LoomTruffleProvider(chainId, writeUrl, readUrl, privateKey);\n}"
+        },
+        {
+          "title": "Конфигурация сети Basechain",
+          "language": "javascript",
+          "sourcePath": "en/10/10.md",
+          "code": "basechain: {\n  provider: function() {\n    const chainId = 'default';\n    const writeUrl = 'http://basechain.dappchains.com/rpc';\n    const readUrl = 'http://basechain.dappchains.com/query';\n    const privateKeyPath = path.join(__dirname, 'mainnet_private_key');\n    const loomTruffleProvider = getLoomProviderWithPrivateKey(privateKeyPath, chainId, writeUrl, readUrl);\n    return loomTruffleProvider;\n    },\n  network_id: '*'\n}"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Deploying DApps with Truffle",
+          "path": "en/10/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Introduction",
+          "path": "en/10/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Getting Started with Truffle",
+          "path": "en/10/02.md"
+        },
+        {
+          "order": 4,
+          "title": "Compiling the Source Code",
+          "path": "en/10/03.md"
+        },
+        {
+          "order": 5,
+          "title": "Migrations",
+          "path": "en/10/04.md"
+        },
+        {
+          "order": 6,
+          "title": "Configuration Files",
+          "path": "en/10/05.md"
+        },
+        {
+          "order": 7,
+          "title": "Deploying Our Smart Contract",
+          "path": "en/10/06.md"
+        },
+        {
+          "order": 8,
+          "title": "Use Truffle with Loom!",
+          "path": "en/10/07.md"
+        },
+        {
+          "order": 9,
+          "title": "Deploy to Loom Testnet",
+          "path": "en/10/08.md"
+        },
+        {
+          "order": 10,
+          "title": "Deploy to Loom- continued",
+          "path": "en/10/09.md"
+        },
+        {
+          "order": 11,
+          "title": "Deploy to Basechain",
+          "path": "en/10/10.md"
+        },
+        {
+          "order": 12,
+          "title": "Lesson Complete!",
+          "path": "en/10/lessoncomplete.md"
+        }
+      ]
+    },
+    {
+      "lessonNumber": 11,
+      "trackTitle": "Advanced Solidity: Get In-depth Knowledge",
+      "lessonTitle": "Testing Smart Contracts with Truffle",
+      "siteChapterCount": 15,
+      "repoElementCount": 16,
+      "ruAvailable": false,
+      "codeRepoAvailable": true,
+      "codeRepoNotes": "В `../cryptozombies-lesson-code/lesson-11/` есть chapter snapshots для `chapter-2`..`chapter-14`: в основном `test/CryptoZombies.js`, `test/helpers/utils.js`, `test/helpers/time.js` и `chapter-14/truffle.js`. Полных lesson markdown и Solidity sources в этой папке нет. Русская локаль `ru/11/` отсутствует.",
+      "summary": "Урок 11 учит строить полноценный JavaScript test suite для Solidity-игры с помощью Truffle. Он проходит путь от минимального skeleton теста и `beforeEach` деплоя до проверки revert paths, ERC721 transfer flows, cooldown logic через time travel в Ganache, более выразительных assertions на Chai и запуска тестов против Loom. Практический итог — рабочий набор тестов для `CryptoZombies`, вспомогательные helpers для revert/time и конфигурация `truffle.js` для Loom testnet.",
+      "mustKnow": [
+        "Как `artifacts.require(...)` даёт contract abstraction и как через `contract()` / `it()` строится Truffle test suite.",
+        "Почему вызовы блокчейна в тестах пишутся через `async/await` и как `{ from: alice }` управляет `msg.sender`.",
+        "Как использовать `result.receipt.status` и `result.logs[0].args...`, чтобы проверять успешность транзакции и читать event data.",
+        "Почему каждый тест должен начинаться с нового деплоя через `beforeEach(async () => { contractInstance = await CryptoZombies.new(); })`.",
+        "Как тестировать revert path через helper вроде `shouldThrow(...)`.",
+        "Как проверять ERC721 ownership transfer в прямом сценарии `transferFrom` и в двухшаговом flow `approve` + `transferFrom`.",
+        "Как работает Ganache time travel: `evm_increaseTime` нужно сопровождать `evm_mine`, иначе cooldown logic не сдвинется.",
+        "Как перейти с `assert` на Chai `expect` и что меняется при запуске тестов против Loom."
+      ],
+      "keyConcepts": [
+        "Truffle contract abstractions и build artifacts",
+        "Mocha-style test suite: `contract`, `it`, `context`",
+        "async transaction testing через `await`",
+        "проверка events и receipts",
+        "negative testing для `require` / revert",
+        "ERC721 transfer и approval flow",
+        "time travel в Ganache через `evm_increaseTime` + `evm_mine`",
+        "Chai `expect` и конфигурация Loom provider"
+      ],
+      "examTasks": [
+        "Написать минимальный Truffle test skeleton для `CryptoZombies` с `artifacts.require`, `contract` и `it`.",
+        "Задеплоить новый контракт в `beforeEach`, создать zombie от Alice и проверить и успешность транзакции, и имя из события.",
+        "Написать negative test, доказывающий, что один адрес не может создать двух зомби, с помощью revert-catching helper.",
+        "Реализовать single-step ERC721 transfer test: mint, взять `zombieId` из logs, вызвать `transferFrom` и проверить `ownerOf(zombieId)`.",
+        "Покрыть оба two-step сценария: Alice делает `approve` Bob, после чего transfer выполняет Bob или сама Alice.",
+        "Починить attack test, который падает из-за cooldown, продвинув время Ganache на один день перед вызовом `attack`.",
+        "Перевести проверки с `assert.equal(...)` на Chai `expect(...).to.equal(...)`, не меняя смысл тестов.",
+        "Изменить `truffle.js` так, чтобы Loom testnet создавал дополнительные аккаунты из mnemonic, и объяснить, почему time-travel test там пропускается."
+      ],
+      "checklist": [
+        "Я могу объяснить, что такое Truffle build artifacts и почему тесты начинаются с `artifacts.require`.",
+        "Я могу писать понятные test suites через `contract`, `it` и `context`.",
+        "Я могу деплоить новый экземпляр контракта в `beforeEach` для каждого теста.",
+        "Я могу проверять happy path и revert path Solidity-функций.",
+        "Я умею читать event data из `result.logs` и использовать её в следующих assertions.",
+        "Я могу тестировать ERC721 ownership transfer и прямым, и approval-based способом.",
+        "Я умею использовать Ganache RPC helper'ы для тестирования cooldown и `block.timestamp` логики.",
+        "Я могу применять Chai `expect` и понимаю, как меняется provider/accounts flow в Loom."
+      ],
+      "snippets": [
+        {
+          "title": "Минимальный Truffle test skeleton",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-11/chapter-2/test/CryptoZombies.js",
+          "code": "const CryptoZombies = artifacts.require(\"CryptoZombies\");\ncontract(\"CryptoZombies\", (accounts) => {\n    it(\"should be able to create a new zombie\", () => {\n\n    })\n})"
+        },
+        {
+          "title": "Хелпер для проверки revert path",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-11/chapter-7/test/helpers/utils.js",
+          "code": "async function shouldThrow(promise) {\n    try {\n        await promise;\n       assert(true);\n    }\n    catch (err) {\n        return;\n    }\n  assert(false, \"The contract did not throw.\");\n}\n\nmodule.exports = {\n  shouldThrow,\n};"
+        },
+        {
+          "title": "Single-step ERC721 transfer test",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-11/chapter-11/test/CryptoZombies.js",
+          "code": "const result = await contractInstance.createRandomZombie(zombieNames[0], {from: alice});\nconst zombieId = result.logs[0].args.zombieId.toNumber();\nawait contractInstance.transferFrom(alice, bob, zombieId, {from: alice});\nconst newOwner = await contractInstance.ownerOf(zombieId);\nassert.equal(newOwner, bob);"
+        },
+        {
+          "title": "Cooldown testing через time travel Ganache",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-11/chapter-12/test/helpers/time.js",
+          "code": "async function increase(duration) {\n    await web3.currentProvider.sendAsync({\n        jsonrpc: \"2.0\",\n        method: \"evm_increaseTime\",\n        params: [duration],\n        id: new Date().getTime()\n    }, () => {});\n\n    web3.currentProvider.send({\n        jsonrpc: '2.0',\n        method: 'evm_mine',\n        params: [],\n        id: new Date().getTime()\n    })\n}"
+        },
+        {
+          "title": "Более выразительные assertions на Chai",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-11/chapter-13/test/CryptoZombies.js",
+          "code": "var expect = require('chai').expect;\n\nconst result = await contractInstance.createRandomZombie(zombieNames[0], {from: alice});\nexpect(result.receipt.status).to.equal(true);\nexpect(result.logs[0].args.name).to.equal(zombieNames[0]);"
+        },
+        {
+          "title": "Настройка Loom provider с дополнительными аккаунтами",
+          "language": "javascript",
+          "sourcePath": "../cryptozombies-lesson-code/lesson-11/chapter-14/truffle.js",
+          "code": "loom_testnet: {\n    provider: function() {\n        const privateKey = 'YOUR_PRIVATE_KEY';\n        const chainId = 'extdev-plasma-us1';\n        const writeUrl = 'wss://extdev-basechain-us1.dappchains.com/websocket';\n        const readUrl = 'wss://extdev-basechain-us1.dappchains.com/queryws';\n        const loomTruffleProvider = new LoomTruffleProvider(chainId, writeUrl, readUrl, privateKey);\n        loomTruffleProvider.createExtraAccountsFromMnemonic(mnemonic, 10);\n        return loomTruffleProvider;\n    },\n    network_id: '9545242630824'\n}"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Testing Smart Contracts with Truffle",
+          "path": "en/11/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Getting Set Up",
+          "path": "en/11/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Getting Set Up (cont'd)",
+          "path": "en/11/02.md"
+        },
+        {
+          "order": 4,
+          "title": "The First Test- Creating a New Zombie",
+          "path": "en/11/03.md"
+        },
+        {
+          "order": 5,
+          "title": "The First Test- Creating a New Zombie (cont'd)",
+          "path": "en/11/04.md"
+        },
+        {
+          "order": 6,
+          "title": "The First Test- Creating a New Zombie (cont'd)",
+          "path": "en/11/05.md"
+        },
+        {
+          "order": 7,
+          "title": "Keeping the Fun in the Game",
+          "path": "en/11/06.md"
+        },
+        {
+          "order": 8,
+          "title": "Keeping the Fun in the Game (cont'd)",
+          "path": "en/11/07.md"
+        },
+        {
+          "order": 9,
+          "title": "Zombie Transfers",
+          "path": "en/11/08.md"
+        },
+        {
+          "order": 10,
+          "title": "ERC721 Token Transfers- Single Step Scenario",
+          "path": "en/11/09.md"
+        },
+        {
+          "order": 11,
+          "title": "ERC721 Token Transfers- Two Step Scenario",
+          "path": "en/11/10.md"
+        },
+        {
+          "order": 12,
+          "title": "ERC721 Token Transfers- Two Step Scenario (cont'd)",
+          "path": "en/11/11.md"
+        },
+        {
+          "order": 13,
+          "title": "Zombie Attacks",
+          "path": "en/11/12.md"
+        },
+        {
+          "order": 14,
+          "title": "More Expressive Assertions with Chai",
+          "path": "en/11/13.md"
+        },
+        {
+          "order": 15,
+          "title": "Testing Against Loom",
+          "path": "en/11/14.md"
+        },
+        {
+          "order": 16,
+          "title": "Lesson Complete!",
+          "path": "en/11/lessoncomplete.md"
+        }
+      ]
+    },
+    {
+      "lessonNumber": 14,
+      "trackTitle": "Advanced Solidity: Get In-depth Knowledge",
+      "lessonTitle": "How to Build an Oracle",
+      "siteChapterCount": 12,
+      "repoElementCount": 13,
+      "ruAvailable": false,
+      "codeRepoAvailable": false,
+      "codeRepoNotes": "В `../cryptozombies-lesson-code/` нет каталога `lesson-14/`. Нужный код берётся из answer blocks в `en/14/*.md`.",
+      "summary": "Урок 14 покрывает on-chain половину централизованного ETH price oracle. В нём строятся два Solidity-контракта: caller contract, который запрашивает цену и принимает callback, и oracle contract, который создаёт request id, хранит pending requests, эмитит события для off-chain обработчика и позже возвращает цену обратно в caller.",
+      "mustKnow": [
+        "Как вызывать другой контракт через interface и сохранённый адрес контракта.",
+        "Почему административные функции нужно защищать через `Ownable` и `onlyOwner`.",
+        "Как устроен асинхронный oracle flow: `request -> event -> off-chain fetch -> callback`.",
+        "Зачем mappings нужны и у caller, и у oracle, чтобы отслеживать валидные request id.",
+        "Почему callback должен быть ограничен только доверенным oracle-адресом.",
+        "Как генерируется request id через `keccak256(abi.encodePacked(now, msg.sender, randNonce)) % modulus`.",
+        "Почему events здесь служат мостом между on-chain и off-chain частями системы."
+      ],
+      "keyConcepts": [
+        "взаимодействие контрактов через interfaces",
+        "авторизация через `Ownable` / `onlyOwner`",
+        "кастомный `onlyOracle` modifier",
+        "mappings для pending requests",
+        "event-driven асинхронный oracle flow",
+        "генерация и корреляция request id",
+        "callback-обновление состояния caller контракта"
+      ],
+      "examTasks": [
+        "Объяснить, почему caller contract не может получить ETH price как обычный return value из `getLatestEthPrice` и какой паттерн заменяет синхронный return.",
+        "Написать безопасную версию `setOracleInstanceAddress`, где только owner может менять oracle, а фронтенд получает событие об изменении адреса.",
+        "Объяснить, зачем caller хранит `myRequests`, а oracle отдельно хранит `pendingRequests`.",
+        "Реализовать `callback(uint256 _ethPrice, uint256 _id)`, чтобы невалидные id отклонялись, а валидные обновляли состояние только один раз.",
+        "Объяснить, какая атака возможна, если callback оставить `public` без ограничения по отправителю.",
+        "Показать, как генерируется oracle request id и какие значения смешиваются в hash.",
+        "Показать, как oracle вызывает callback произвольного caller контракта через interface и `_callerAddress`."
+      ],
+      "checklist": [
+        "Я могу объяснить полный request/callback lifecycle между двумя контрактами.",
+        "Я могу написать interface и создать экземпляр другого контракта по адресу.",
+        "Я знаю, какие функции должны быть `onlyOwner` и почему.",
+        "Я понимаю, почему callback должен проверять и `msg.sender`, и request id.",
+        "Я могу объяснить назначение каждого события в oracle flow.",
+        "Я понимаю, почему mappings очищаются после успешного fulfill.",
+        "Я могу восстановить `getLatestEthPrice` и `setLatestEthPrice` по памяти."
+      ],
+      "snippets": [
+        {
+          "title": "Защищённая смена адреса oracle",
+          "language": "solidity",
+          "sourcePath": "en/14/04.md",
+          "code": "function setOracleInstanceAddress (address _oracleInstanceAddress) public onlyOwner {\n  oracleAddress = _oracleInstanceAddress;\n  oracleInstance = EthPriceOracleInterface(oracleAddress);\n  emit newOracleAddressEvent(oracleAddress);\n}"
+        },
+        {
+          "title": "Запрос новой ETH price",
+          "language": "solidity",
+          "sourcePath": "en/14/05.md",
+          "code": "function updateEthPrice() public {\n  uint256 id = oracleInstance.getLatestEthPrice();\n  myRequests[id] = true;\n  emit ReceivedNewRequestIdEvent(id);\n}"
+        },
+        {
+          "title": "Callback с проверкой request id",
+          "language": "solidity",
+          "sourcePath": "en/14/06.md",
+          "code": "function callback(uint256 _ethPrice, uint256 _id) public {\n  require(myRequests[_id], \"This request is not in my pending list.\");\n  ethPrice = _ethPrice;\n  delete myRequests[_id];\n  emit PriceUpdatedEvent(_ethPrice, _id);\n}"
+        },
+        {
+          "title": "Создание request id и событие для off-chain oracle",
+          "language": "solidity",
+          "sourcePath": "en/14/09.md",
+          "code": "function getLatestEthPrice() public returns (uint256) {\n  randNonce++;\n  uint id = uint(keccak256(abi.encodePacked(now, msg.sender, randNonce))) % modulus;\n  pendingRequests[id] = true;\n  emit GetLatestEthPriceEvent(msg.sender, id);\n  return id;\n}"
+        },
+        {
+          "title": "Oracle возвращает цену вызывающему контракту",
+          "language": "solidity",
+          "sourcePath": "en/14/11.md",
+          "code": "function setLatestEthPrice(uint256 _ethPrice, address _callerAddress, uint256 _id) public onlyOwner {\n  require(pendingRequests[_id], \"This request is not in my pending list.\");\n  delete pendingRequests[_id];\n  CallerContractInterface callerContractInstance;\n  callerContractInstance = CallerContractInterface(_callerAddress);\n  callerContractInstance.callback(_ethPrice, _id);\n  emit SetLatestEthPriceEvent(_ethPrice, _callerAddress);\n}"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "How to Build an Oracle",
+          "path": "en/14/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Settings Things Up",
+          "path": "en/14/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Calling Other Contracts",
+          "path": "en/14/02.md"
+        },
+        {
+          "order": 4,
+          "title": "Calling Other Contracts- Cont'd",
+          "path": "en/14/03.md"
+        },
+        {
+          "order": 5,
+          "title": "Function Modifiers",
+          "path": "en/14/04.md"
+        },
+        {
+          "order": 6,
+          "title": "Using a Mapping to Keep Track of Requests",
+          "path": "en/14/05.md"
+        },
+        {
+          "order": 7,
+          "title": "The Callback Function",
+          "path": "en/14/06.md"
+        },
+        {
+          "order": 8,
+          "title": "The onlyOracle Modifier",
+          "path": "en/14/07.md"
+        },
+        {
+          "order": 9,
+          "title": "The getLatestEthPrice Function",
+          "path": "en/14/08.md"
+        },
+        {
+          "order": 10,
+          "title": "The getLatestEthPrice Function - Cont'd",
+          "path": "en/14/09.md"
+        },
+        {
+          "order": 11,
+          "title": "The setLatestEthPrice Function",
+          "path": "en/14/10.md"
+        },
+        {
+          "order": 12,
+          "title": "The Oracle Contract",
+          "path": "en/14/11.md"
+        },
+        {
+          "order": 13,
+          "title": "Lesson Complete!",
+          "path": "en/14/lessoncomplete.md"
+        }
+      ]
+    },
+    {
+      "lessonNumber": 15,
+      "trackTitle": "Advanced Solidity: Get In-depth Knowledge",
+      "lessonTitle": "How to Build an Oracle - Part 2",
+      "siteChapterCount": 15,
+      "repoElementCount": 16,
+      "ruAvailable": false,
+      "codeRepoAvailable": false,
+      "codeRepoNotes": "В `../cryptozombies-lesson-code/` нет каталога `lesson-15/`. Нужный код берётся из answer blocks в `en/15/*.md`.",
+      "summary": "Урок 15 реализует off-chain половину oracle на JavaScript и минимальный клиент, который им пользуется. Нужно поднять контракты по build artifacts, подписаться на `GetLatestEthPriceEvent`, поставить запросы в очередь, обрабатывать их батчами, получать цену ETH из Binance, конвертировать её в integer-safe формат через BN.js, отправлять результат назад через `setLatestEthPrice` и связать всё deployment scripts и runtime loop'ами.",
+      "mustKnow": [
+        "Как создавать экземпляр deployed контракта из ABI и адреса в build artifact.",
+        "Как слушать Solidity events из JavaScript и ставить request в очередь.",
+        "Как работает batching очереди через `CHUNK_SIZE` и polling loop.",
+        "Зачем нужен retry logic через `MAX_RETRIES`, `try/catch` и fallback значение.",
+        "Как получать ETH price по HTTP через `axios`.",
+        "Как переводить decimal API output в integer значение для EVM через BN.js.",
+        "Почему весь oracle и client flow пишется на `async/await`.",
+        "Как deployment и runtime разбиваются на отдельные Truffle configs и migrations для oracle и caller."
+      ],
+      "keyConcepts": [
+        "инициализация web3 contract по compiled artifact",
+        "подписка на events и очередь запросов в памяти",
+        "chunked processing loop через `setInterval`",
+        "retry/fallback для ненадёжных внешних вызовов",
+        "получение цены через axios",
+        "масштабирование decimal price в BN.js integer",
+        "отдельные процессы oracle и client"
+      ],
+      "examTasks": [
+        "Показать, как `getOracleContract` находит deployed oracle instance в artifact и почему для этого нужен `networkId`.",
+        "Объяснить роль `GetLatestEthPriceEvent` во всей off-chain архитектуре и как на него реагирует JS oracle.",
+        "Объяснить, зачем нужна in-memory очередь `pendingRequests` и как `CHUNK_SIZE` влияет на поведение обработки.",
+        "Реализовать retry loop для `processRequest`, включая fallback-поведение после исчерпания всех попыток.",
+        "Объяснить, почему строковую цену с Binance нужно преобразовывать перед отправкой on-chain и как здесь используется BN.js.",
+        "Показать, что клиент обязан сделать перед периодическим вызовом `updateEthPrice`, и почему сначала нужно привязать адрес oracle.",
+        "Объяснить, почему для oracle и caller нужны отдельные deployment/runtime конфигурации и private keys."
+      ],
+      "checklist": [
+        "Я могу создать web3 contract из `abi + deployed address` в JSON artifact.",
+        "Я могу объяснить весь pipeline `event -> queue -> process -> callback`.",
+        "Я понимаю, почему запросы обрабатываются батчами и с retry, а не inline.",
+        "Я могу преобразовать decimal ETH price string в integer-формат для Solidity.",
+        "Я понимаю fallback-ветку, которая в крайнем случае отправляет `0`.",
+        "Я могу восстановить startup flow `EthPriceOracle.js` и `Client.js` по памяти.",
+        "Я понимаю назначение отдельных Truffle configs и migration файлов."
+      ],
+      "snippets": [
+        {
+          "title": "Получение deployed oracle контракта по artifact",
+          "language": "javascript",
+          "sourcePath": "en/15/01.md",
+          "code": "async function getOracleContract (web3js) {\n  const networkId = await web3js.eth.net.getId()\n  return new web3js.eth.Contract(OracleJSON.abi, OracleJSON.networks[networkId].address)\n}"
+        },
+        {
+          "title": "Подписка на GetLatestEthPriceEvent",
+          "language": "javascript",
+          "sourcePath": "en/15/03.md",
+          "code": "async function filterEvents (oracleContract, web3js) {\n  oracleContract.events.GetLatestEthPriceEvent(async (err, event) => {\n    if (err) {\n      console.error('Error on event', err)\n      return\n    }\n    await addRequestToQueue(event)\n  })\n}"
+        },
+        {
+          "title": "Постановка request в очередь",
+          "language": "javascript",
+          "sourcePath": "en/15/03.md",
+          "code": "async function addRequestToQueue (event) {\n  const callerAddress = event.returnValues.callerAddress\n  const id = event.returnValues.id\n  pendingRequests.push({ callerAddress, id })\n}"
+        },
+        {
+          "title": "Retry loop обработки request",
+          "language": "javascript",
+          "sourcePath": "en/15/08.md",
+          "code": "async function processRequest (oracleContract, ownerAddress, id, callerAddress) {\n  let retries = 0\n  while (retries < MAX_RETRIES) {\n    try {\n      const ethPrice = await retrieveLatestEthPrice()\n      await setLatestEthPrice(oracleContract, callerAddress, ownerAddress, ethPrice, id)\n      return\n    } catch (error) {\n      if (retries === MAX_RETRIES - 1) {\n        await setLatestEthPrice(oracleContract, callerAddress, ownerAddress, '0', id)\n        return\n      }\n      retries++\n    }\n  }\n}"
+        },
+        {
+          "title": "Конвертация цены в integer для EVM",
+          "language": "javascript",
+          "sourcePath": "en/15/10.md",
+          "code": "async function setLatestEthPrice (oracleContract, callerAddress, ownerAddress, ethPrice, id) {\n  ethPrice = ethPrice.replace('.', '')\n  const multiplier = new BN(10**10, 10)\n  const ethPriceInt = (new BN(parseInt(ethPrice), 10)).mul(multiplier)\n  const idInt = new BN(parseInt(id))\n  await oracleContract.methods.setLatestEthPrice(ethPriceInt.toString(), callerAddress, idInt.toString()).send({ from: ownerAddress })\n}"
+        },
+        {
+          "title": "Клиент привязывает oracle и периодически обновляет цену",
+          "language": "javascript",
+          "sourcePath": "en/15/12.md",
+          "code": "const networkId = await web3js.eth.net.getId()\nconst oracleAddress =  OracleJSON.networks[networkId].address\nawait callerContract.methods.setOracleInstanceAddress(oracleAddress).send({ from: ownerAddress })\nsetInterval( async () => {\n  await callerContract.methods.updateEthPrice().send({ from: ownerAddress })\n}, SLEEP_INTERVAL);"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "How to Build an Oracle - Part 2",
+          "path": "en/15/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Getting Set Up",
+          "path": "en/15/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Listening for Events",
+          "path": "en/15/02.md"
+        },
+        {
+          "order": 4,
+          "title": "Adding a Request to the Processing Queue",
+          "path": "en/15/03.md"
+        },
+        {
+          "order": 5,
+          "title": "Looping Trough the Processing Queue",
+          "path": "en/15/04.md"
+        },
+        {
+          "order": 6,
+          "title": "Processing the Queue",
+          "path": "en/15/05.md"
+        },
+        {
+          "order": 7,
+          "title": "The Retry Loop",
+          "path": "en/15/06.md"
+        },
+        {
+          "order": 8,
+          "title": "Using Try and Catch in JavaScript",
+          "path": "en/15/07.md"
+        },
+        {
+          "order": 9,
+          "title": "Using Try and Catch in JavaScript- Cont'd",
+          "path": "en/15/08.md"
+        },
+        {
+          "order": 10,
+          "title": "Working with Numbers in Ethereum and JavaScript",
+          "path": "en/15/09.md"
+        },
+        {
+          "order": 11,
+          "title": "Returning multiple values in JavaScript",
+          "path": "en/15/10.md"
+        },
+        {
+          "order": 12,
+          "title": "Wrapping Up the Oracle",
+          "path": "en/15/11.md"
+        },
+        {
+          "order": 13,
+          "title": "Returning multiple values in JavaScript",
+          "path": "en/15/12.md"
+        },
+        {
+          "order": 14,
+          "title": "Deploy the contracts",
+          "path": "en/15/13.md"
+        },
+        {
+          "order": 15,
+          "title": "Putting Everything Together",
+          "path": "en/15/14.md"
+        },
+        {
+          "order": 16,
+          "title": "Lesson Complete!",
+          "path": "en/15/lessoncomplete.md"
+        }
+      ]
+    },
+    {
+      "lessonNumber": 16,
+      "trackTitle": "Advanced Solidity: Get In-depth Knowledge",
+      "lessonTitle": "How to Build an Oracle - Part 3",
+      "siteChapterCount": 11,
+      "repoElementCount": 12,
+      "ruAvailable": false,
+      "codeRepoAvailable": false,
+      "codeRepoNotes": "В `../cryptozombies-lesson-code/` нет каталога `lesson-16/`. Нужный код берётся из answer blocks в `en/16/*.md`.",
+      "summary": "Урок 16 превращает single-owner oracle в более децентрализованный workflow. Вместо одного обновляющего owner'а появляется role-based access control, owner может управлять набором oracle-адресов, каждый request собирает несколько ответов, после достижения порога `THRESHOLD` контракт вычисляет среднюю цену, защищает арифметику через SafeMath, очищает request state и только потом возвращает итоговую цену caller контракту.",
+      "mustKnow": [
+        "Как подключается OpenZeppelin `Roles` через `using Roles for Roles.Role` и как хранятся роли `owners` и `oracles`.",
+        "Почему после отказа от `Ownable` нужен свой constructor и как в него передаётся initial owner.",
+        "Как `addOracle` и `removeOracle` проверяют права owner'а, существование/отсутствие oracle и эмитят события.",
+        "Зачем нужен `numOracles` и почему нельзя удалить последнего oracle.",
+        "Как responses хранятся по request id через `mapping(uint256 => Response[])`, а не завершаются первым же ответом.",
+        "Как `THRESHOLD` определяет момент финализации и почему это лучше, чем ждать вообще всех oracle.",
+        "Как контракт вычисляет среднюю ETH price по нескольким ответам и возвращает её caller контракту.",
+        "Зачем в aggregation path добавляется SafeMath и почему после fulfill удаляются и `pendingRequests[_id]`, и `requestIdToResponse[_id]`."
+      ],
+      "keyConcepts": [
+        "role-based access control через OpenZeppelin Roles",
+        "constructor-based инициализация owner после отказа от `Ownable`",
+        "управление жизненным циклом oracle-адресов",
+        "сбор нескольких ответов в `Response[]` по request id",
+        "threshold-based finalization",
+        "агрегация цены через среднее значение",
+        "защита арифметики через SafeMath",
+        "cleanup state и callback caller контракту"
+      ],
+      "examTasks": [
+        "Реализовать role-based access control так, чтобы только owner мог добавлять/удалять oracle-адреса, а только oracle мог отправлять цену.",
+        "Написать constructor, который принимает owner address и инициализирует роль `owners` при деплое.",
+        "Дописать `addOracle`, чтобы он запрещал дубликаты и эмитил событие о регистрации нового oracle.",
+        "Дописать `removeOracle`, чтобы он запрещал удалять последнего oracle и безопасно уменьшал `numOracles`.",
+        "Определить `struct Response` и хранить ответы в `requestIdToResponse[_id]`.",
+        "Изменить `setLatestEthPrice`, чтобы он ждал `requestIdToResponse[_id].length == THRESHOLD` перед финализацией запроса.",
+        "Посчитать итоговую ETH price как среднее по собранным ответам и вызвать callback для requestor'а.",
+        "Заменить обычную арифметику на SafeMath и очистить request state после fulfill."
+      ],
+      "checklist": [
+        "Я могу объяснить переход от `Ownable` к `Roles`.",
+        "Я могу воспроизвести проверки прав owner/oracle через `require`.",
+        "Я понимаю, зачем нужен `numOracles` и запрет на удаление последнего oracle.",
+        "Я могу описать `Response` и структуру `requestIdToResponse` по памяти.",
+        "Я могу проследить весь путь fulfillment: ответ oracle -> рост счётчика -> достижение threshold -> average -> callback -> event.",
+        "Я понимаю, зачем SafeMath используется даже в кажущейся простой aggregation logic.",
+        "Я помню, что после завершения запроса нужно удалить и pending flag, и накопленные responses."
+      ],
+      "snippets": [
+        {
+          "title": "Подключение Roles и хранение owner/oracle ролей",
+          "language": "solidity",
+          "sourcePath": "en/16/01.md",
+          "code": "using Roles for Roles.Role;\nRoles.Role private owners;\nRoles.Role private oracles;"
+        },
+        {
+          "title": "Constructor задаёт начального owner",
+          "language": "solidity",
+          "sourcePath": "en/16/02.md",
+          "code": "constructor (address _owner) public {\n  owners.add(_owner);\n}"
+        },
+        {
+          "title": "Owner добавляет новый oracle",
+          "language": "solidity",
+          "sourcePath": "en/16/04.md",
+          "code": "function addOracle (address _oracle) public {\n  require(owners.has(msg.sender), \"Not an owner!\");\n  require(!oracles.has(_oracle), \"Already an oracle!\");\n  oracles.add(_oracle);\n  emit AddOracleEvent(_oracle);\n}"
+        },
+        {
+          "title": "Модель хранения ответов по request id",
+          "language": "solidity",
+          "sourcePath": "en/16/06.md",
+          "code": "struct Response {\n  address oracleAddress;\n  address callerAddress;\n  uint256 ethPrice;\n}\nmapping (uint256=>Response[]) public requestIdToResponse;"
+        },
+        {
+          "title": "Агрегация ответов после достижения threshold",
+          "language": "solidity",
+          "sourcePath": "en/16/10.md",
+          "code": "uint numResponses = requestIdToResponse[_id].length;\nif (numResponses == THRESHOLD) {\n  uint computedEthPrice = 0;\n  for (uint f=0; f < requestIdToResponse[_id].length; f++) {\n    computedEthPrice = computedEthPrice.add(requestIdToResponse[_id][f].ethPrice);\n  }\n  computedEthPrice = computedEthPrice.div(numResponses);\n}"
+        },
+        {
+          "title": "Очистка состояния и callback с итоговой ценой",
+          "language": "solidity",
+          "sourcePath": "en/16/10.md",
+          "code": "delete pendingRequests[_id];\ndelete requestIdToResponse[_id];\nCallerContractInterface callerContractInstance;\ncallerContractInstance = CallerContractInterface(_callerAddress);\ncallerContractInstance.callback(computedEthPrice, _id);\nemit SetLatestEthPriceEvent(computedEthPrice, _callerAddress);"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "How to Build an Oracle - Part 3",
+          "path": "en/16/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Using Roles",
+          "path": "en/16/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Using Constructor to Set the Owner",
+          "path": "en/16/02.md"
+        },
+        {
+          "order": 4,
+          "title": "Setting Up New Oracles",
+          "path": "en/16/03.md"
+        },
+        {
+          "order": 5,
+          "title": "The Logical NOT Operator",
+          "path": "en/16/04.md"
+        },
+        {
+          "order": 6,
+          "title": "Removing an Oracle",
+          "path": "en/16/05.md"
+        },
+        {
+          "order": 7,
+          "title": "Keeping Track of Responses",
+          "path": "en/16/06.md"
+        },
+        {
+          "order": 8,
+          "title": "Computing the ETH Price",
+          "path": "en/16/07.md"
+        },
+        {
+          "order": 9,
+          "title": "Computing the ETH Price- Cont'd",
+          "path": "en/16/08.md"
+        },
+        {
+          "order": 10,
+          "title": "Using SafeMath",
+          "path": "en/16/09.md"
+        },
+        {
+          "order": 11,
+          "title": "Using SafeMath",
+          "path": "en/16/10.md"
+        },
+        {
+          "order": 12,
+          "title": "Lesson Complete!",
+          "path": "en/16/lessoncomplete.md"
+        }
+      ]
+    }
+  ]
+}

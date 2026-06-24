@@ -1,0 +1,336 @@
+{
+  "trackTitle": "Beyond Ethereum: Explore the Blockchain Ecosystem",
+  "includedLessons": [
+    17,
+    18
+  ],
+  "sourceNotes": {
+    "ruAvailable": false,
+    "codeRepoCoverage": {
+      "17": "missing",
+      "18": "missing"
+    }
+  },
+  "lessons": [
+    {
+      "lessonNumber": 17,
+      "trackTitle": "Beyond Ethereum: Explore the Blockchain Ecosystem",
+      "lessonTitle": "Intro to zkSync",
+      "siteChapterCount": 16,
+      "repoElementCount": 17,
+      "ruAvailable": false,
+      "codeRepoAvailable": false,
+      "codeRepoNotes": "В `cryptozombies-lesson-code` нет отдельного каталога `lesson-17/`, а в самих lesson-17 markdown нет прямой привязки к sample code по главам. Нужный код берётся из answer blocks в `en/17/*.md`.",
+      "summary": "Урок 17 — это практическое введение в zkSync как в ZK-rollup платёжную систему второго уровня. Курс показывает, как построить маленький Node.js workflow вокруг `ethers` и `zksync`: подключиться к Ethereum и zkSync provider'ам, создать zkSync wallet из Ethereum wallet, зарегистрировать signing key, завести ETH из Ethereum в zkSync, посчитать fees, перевести ETH между zkSync-аккаунтами, различать committed и verified balances и вывести остаток обратно в Ethereum. Итоговый артефакт — минимальное двухскриптовое приложение `alice.js` / `bob.js` с общим `utils.js`, где Alice пополняет zkSync, платит Bob и выводит остаток, а Bob следит за изменением баланса.",
+      "mustKnow": [
+        "zkSync в курсе подаётся как layer-2 ZK-rollup, где средства защищены Ethereum-смарт-контрактом, а вычисления и хранение состояния происходят off-chain.",
+        "Приложению нужны сразу два provider'а: zkSync provider (`zksync.getDefaultProvider`) и Ethereum provider (`ethers.getDefaultProvider`).",
+        "zkSync wallet инициализируется из Ethereum wallet, поэтому владение аккаунтом привязано к Ethereum private key.",
+        "Перед переводами на zkSync нужно зарегистрировать signing key через `isSigningKeySet`, `getAccountId` и `setSigningKey`, а затем дождаться receipt.",
+        "Для завода ETH из Ethereum в zkSync используется `depositToSyncFromEthereum`, а человекочитаемое значение ETH нужно переводить через `ethers.utils.parseEther`.",
+        "И переводы, и выводы требуют расчёта fee и нормализации суммы/комиссии через `closestPackableTransactionAmount` и `closestPackableTransactionFee`.",
+        "В zkSync есть committed balances и verified balances; committed средства уже можно использовать до финальной верификации на Ethereum.",
+        "Полный workflow урока: создать Alice/Bob wallets, завести ETH Alice в zkSync, зарегистрировать Alice, перевести ETH Bob, отобразить баланс Bob и вывести остаток Alice обратно в Ethereum."
+      ],
+      "keyConcepts": [
+        "архитектура ZK-rollup / zkSync",
+        "zero-knowledge proofs и мотивация zk-SNARK",
+        "Ethereum wallets, private keys и производные zkSync accounts",
+        "регистрация signing key в zkSync",
+        "deposit / transfer / withdraw lifecycle",
+        "расчёт fee и packable values",
+        "committed vs verified balances",
+        "polling состояния через `setInterval`"
+      ],
+      "examTasks": [
+        "Объяснить, что такое zkSync в терминах урока и почему он считается layer-2 scaling solution, защищённой Ethereum.",
+        "Написать или дополнить helper, который создаёт zkSync provider и корректно обрабатывает ошибку подключения.",
+        "По данному zkSync wallet реализовать регистрацию аккаунта: проверить signing key и вызвать `setSigningKey` только при необходимости.",
+        "Реализовать helper депозита, который заводит ETH из Ethereum в zkSync и дожидается operator receipt.",
+        "Посчитать transfer fee, привести amount и fee к packable формату и выполнить перевод в другой zkSync address.",
+        "Объяснить разницу между committed и verified balances и показать, как урок выводит оба состояния.",
+        "Дописать `bob.js`, чтобы он один раз показывал личность Bob в Rinkeby, а затем по таймеру отслеживал баланс в zkSync.",
+        "Дописать `alice.js`, чтобы он пополнял zkSync, регистрировал аккаунт, переводил ETH Bob и выводил остаток назад в Ethereum."
+      ],
+      "checklist": [
+        "Я могу определить zkSync как ZK-rollup с хранением средств в Ethereum и off-chain исполнением.",
+        "Я могу создать оба provider'а для одной сети и объяснить, зачем нужны оба.",
+        "Я могу создать `ethers.Wallet` из private key и вывести из него zkSync wallet.",
+        "Я могу корректно зарегистрировать zkSync account, включая проверку `Unknown account` и ожидание receipt.",
+        "Я умею использовать `parseEther` и `formatEther` в правильных точках ETH workflow.",
+        "Я умею рассчитывать fee и packable amount/fee перед отправкой transfer и withdraw.",
+        "Я могу объяснить committed и verified balances и безопасно вывести их, даже если баланс нулевой.",
+        "Я понимаю итоговую схему из `alice.js`, `bob.js` и общего `utils.js`."
+      ],
+      "snippets": [
+        {
+          "title": "Создание zkSync provider",
+          "language": "javascript",
+          "sourcePath": "en/17/02.md",
+          "code": "async function getZkSyncProvider (zksync, networkName) {\n  let zkSyncProvider\n  try {\n    zkSyncProvider = await zksync.getDefaultProvider(networkName)\n  } catch (error) {\n    console.log('Unable to connect to zkSync.')\n    console.log(error)\n  }\n  return zkSyncProvider\n}"
+        },
+        {
+          "title": "Регистрация signing key в zkSync",
+          "language": "javascript",
+          "sourcePath": "en/17/04.md",
+          "code": "async function registerAccount (wallet) {\n  console.log(`Registering the ${wallet.address()} account on zkSync`)\n  if (!await wallet.isSigningKeySet()) {\n    if (await wallet.getAccountId() === undefined) {\n      throw new Error('Unknown account')\n    }\n    const changePubkey = await wallet.setSigningKey()\n    await changePubkey.awaitReceipt()\n  }\n}"
+        },
+        {
+          "title": "Депозит ETH из Ethereum в zkSync",
+          "language": "javascript",
+          "sourcePath": "en/17/05.md",
+          "code": "async function depositToZkSync (zkSyncWallet, token, amountToDeposit, ethers) {\n  const deposit = await zkSyncWallet.depositToSyncFromEthereum({\n    depositTo: zkSyncWallet.address(),\n    token: token,\n    amount: ethers.utils.parseEther(amountToDeposit)\n  })\n  try {\n    await deposit.awaitReceipt()\n  } catch (error) {\n    console.log('Error while awaiting confirmation from the zkSync operators.')\n    console.log(error)\n  }\n}"
+        },
+        {
+          "title": "Packable transfer внутри zkSync",
+          "language": "javascript",
+          "sourcePath": "en/17/06.md",
+          "code": "async function transfer (from, toAddress, amountToTransfer, transferFee, token, zksync, ethers) {\n  const closestPackableAmount = zksync.utils.closestPackableTransactionAmount(\n    ethers.utils.parseEther(amountToTransfer))\n  const closestPackableFee = zksync.utils.closestPackableTransactionFee(\n    ethers.utils.parseEther(transferFee))\n\n  const transfer = await from.syncTransfer({\n    to: toAddress,\n    token: token,\n    amount: closestPackableAmount,\n    fee: closestPackableFee\n  })\n  const transferReceipt = await transfer.awaitReceipt()\n  console.log('Got transfer receipt.')\n  console.log(transferReceipt)\n}"
+        },
+        {
+          "title": "Расчёт zkSync fee",
+          "language": "javascript",
+          "sourcePath": "en/17/07.md",
+          "code": "async function getFee(transactionType, address, token, zkSyncProvider, ethers) {\n  const feeInWei = await zkSyncProvider.getTransactionFee(transactionType, address, token)\n  return ethers.utils.formatEther(feeInWei.totalFee.toString())\n}"
+        },
+        {
+          "title": "Вывод средств из zkSync в Ethereum",
+          "language": "javascript",
+          "sourcePath": "en/17/08.md",
+          "code": "async function withdrawToEthereum (wallet, amountToWithdraw, withdrawalFee, token, zksync, ethers) {\n  const closestPackableAmount = zksync.utils.closestPackableTransactionAmount(ethers.utils.parseEther(amountToWithdraw))\n  const closestPackableFee = zksync.utils.closestPackableTransactionFee(ethers.utils.parseEther(withdrawalFee))\n  const withdraw = await wallet.withdrawFromSyncToEthereum({\n    ethAddress: wallet.address(),\n    token: token,\n    amount: closestPackableAmount,\n    fee: closestPackableFee\n    })\n    await withdraw.awaitVerifyReceipt()\n    console.log('ZKP verification is complete')\n}"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Intro to zkSync",
+          "path": "en/17/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Getting set up",
+          "path": "en/17/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Let’s talk to zkSync",
+          "path": "en/17/02.md"
+        },
+        {
+          "order": 4,
+          "title": "Create a new zkSync account",
+          "path": "en/17/03.md"
+        },
+        {
+          "order": 5,
+          "title": "Create a new zkSync account - continued",
+          "path": "en/17/04.md"
+        },
+        {
+          "order": 6,
+          "title": "Deposit assets to zkSync",
+          "path": "en/17/05.md"
+        },
+        {
+          "order": 7,
+          "title": "Transfer assets on zkSync",
+          "path": "en/17/06.md"
+        },
+        {
+          "order": 8,
+          "title": "Transfer fees",
+          "path": "en/17/07.md"
+        },
+        {
+          "order": 9,
+          "title": "Withdraw to Ethereum",
+          "path": "en/17/08.md"
+        },
+        {
+          "order": 10,
+          "title": "Account balances",
+          "path": "en/17/09.md"
+        },
+        {
+          "order": 11,
+          "title": "The shopkeeper - Talking to the blockchain",
+          "path": "en/17/10.md"
+        },
+        {
+          "order": 12,
+          "title": "The shopkeeper - Wallets and private keys",
+          "path": "en/17/11.md"
+        },
+        {
+          "order": 13,
+          "title": "Update balances",
+          "path": "en/17/12.md"
+        },
+        {
+          "order": 14,
+          "title": "Register an account",
+          "path": "en/17/13.md"
+        },
+        {
+          "order": 15,
+          "title": "Make a payment on zkSync",
+          "path": "en/17/14.md"
+        },
+        {
+          "order": 16,
+          "title": "Putting everything together",
+          "path": "en/17/15.md"
+        },
+        {
+          "order": 17,
+          "title": "Lesson Complete!",
+          "path": "en/17/lessoncomplete.md"
+        }
+      ]
+    },
+    {
+      "lessonNumber": 18,
+      "trackTitle": "Beyond Ethereum: Explore the Blockchain Ecosystem",
+      "lessonTitle": "Advanced zkSync Concepts",
+      "siteChapterCount": 10,
+      "repoElementCount": 11,
+      "ruAvailable": false,
+      "codeRepoAvailable": false,
+      "codeRepoNotes": "В `cryptozombies-lesson-code` нет отдельного каталога `lesson-18/`. Нужный код берётся из answer blocks в `en/18/*.md`.",
+      "summary": "Урок 18 — это вторая часть по zkSync, где ETH-only demo из lesson 17 превращается в multi-token приложение для ERC20 активов, например USDT. Курс объясняет, почему `parseEther`/`formatEther` нельзя применять ко всем токенам, как использовать `zkSyncProvider.tokenSet` для token-aware конвертаций, зачем нужен `approveERC20TokenDeposits` перед депозитом ERC20, как печатать committed/verified balances для нескольких токенов и как пересчитать deposit/transfer/withdraw/fee функции так, чтобы они корректно работали с разными decimals. Итоговый артефакт — Node.js приложение `alice.js`, `bob.js`, `utils.js`, которое умеет работать с ERC20 балансами на Ethereum и zkSync, считать token-aware fees и выполнять deposit / transfer / withdraw для выбранного токена.",
+      "mustKnow": [
+        "Урок 18 опирается на lesson 17 и расширяет ETH-only demo до ERC20 токенов, в курсе это показано на примере USDT.",
+        "Decimals у токенов различаются: у ETH 18 decimals, у USDT 6, поэтому жёстко использовать `parseEther`/`formatEther` нельзя.",
+        "`zkSyncProvider.tokenSet` — центральный helper для token-aware преобразований.",
+        "Для отправки человекочитаемых сумм в zkSync операции нужно использовать `tokenSet.parseToken(token, amount)`.",
+        "Для показа балансов и fees пользователю нужно использовать `tokenSet.formatToken(token, amount)`.",
+        "Перед депозитом ERC20 из Ethereum в zkSync обязательно нужно вызвать `approveERC20TokenDeposits(token)`.",
+        "`displayZkSyncBalance` больше не может печатать только ETH: он должен итерироваться по `state.committed.balances` и `state.verified.balances`.",
+        "Итоговое приложение поддерживает переключение актива через переменную `token` и согласованные deposit/transfer/withdraw amounts."
+      ],
+      "keyConcepts": [
+        "zkSync `TokenSet`",
+        "token decimals и разница между human-readable value и `BigNumber`",
+        "ERC20 allowance / approval перед депозитом",
+        "`getEthereumBalance(token)` на `zksync.Wallet`",
+        "packable transaction amount и fee",
+        "committed vs verified balances для нескольких токенов",
+        "token-aware форматирование fees через `getTransactionFee` + `tokenSet.formatToken`"
+      ],
+      "examTasks": [
+        "Объяснить, почему `ethers.utils.parseEther` и `ethers.utils.formatEther` неверны для multi-token zkSync app с USDT.",
+        "По ETH-only версии `alice.js` переписать получение и вывод баланса так, чтобы показывался ERC20 баланс Alice в Ethereum.",
+        "Добавить обязательный approval step перед депозитом ERC20 в zkSync и объяснить, зачем он нужен.",
+        "Переделать `depositToZkSync`, `transfer` и `withdrawToEthereum`, чтобы они принимали `TokenSet` и корректно конвертировали token amounts.",
+        "Написать или объяснить функцию, которая печатает все committed и verified balances из `wallet.getAccountState()` через `for...in`.",
+        "Обновить helper `getFee`, чтобы он возвращал human-readable fee для выбранного токена, а не предполагал ETH decimals.",
+        "Описать полный flow `alice.js`: инициализация provider'ов и wallet'ов, чтение token balance, approval, deposit, register signing key, transfer, withdraw."
+      ],
+      "checklist": [
+        "Я знаю точное название урока `Advanced zkSync Concepts` и трека `Beyond Ethereum: Explore the Blockchain Ecosystem`.",
+        "Я помню, что урок содержит 11 repo elements: overview, 9 chapter files и lesson complete.",
+        "Я могу объяснить, что делает `zkSyncProvider.tokenSet` и когда вызывать `parseToken`, а когда `formatToken`.",
+        "Я помню, что ERC20 депозиты требуют `approveERC20TokenDeposits(token)` до самого депозита.",
+        "Я могу получить ERC20 баланс в Ethereum через `await zkSyncWallet.getEthereumBalance(token)`.",
+        "Я могу обновить deposit/transfer/withdraw helpers так, чтобы и amount, и fee стали token-aware и packable.",
+        "Я могу различить committed и verified balances и вывести оба набора из account state.",
+        "Я понимаю, что итоговый артефакт — это multi-asset zkSync Node.js app на `alice.js`, `bob.js` и `utils.js`."
+      ],
+      "snippets": [
+        {
+          "title": "Чтение и форматирование ERC20 баланса через TokenSet",
+          "language": "javascript",
+          "sourcePath": "en/18/02.md",
+          "code": "const tokenSet = zkSyncProvider.tokenSet\nconst aliceInitialRinkebyBalance = await aliceZkSyncWallet.getEthereumBalance(token)\nconsole.log(`Alice's initial balance on Rinkeby is: ${tokenSet.formatToken(token, aliceInitialRinkebyBalance)}`)"
+        },
+        {
+          "title": "Approval ERC20 депозитов в zkSync",
+          "language": "javascript",
+          "sourcePath": "en/18/03.md",
+          "code": "await aliceZkSyncWallet.approveERC20TokenDeposits(token)"
+        },
+        {
+          "title": "Депозит с token-aware parsing",
+          "language": "javascript",
+          "sourcePath": "en/18/05.md",
+          "code": "async function depositToZkSync (zkSyncWallet, token, amountToDeposit, tokenSet) {\n  const deposit = await zkSyncWallet.depositToSyncFromEthereum({\n    depositTo: zkSyncWallet.address(),\n    token: token,\n    amount: tokenSet.parseToken(token, amountToDeposit)\n  })\n  await deposit.awaitReceipt()\n}"
+        },
+        {
+          "title": "Печать committed и verified balances",
+          "language": "javascript",
+          "sourcePath": "en/18/06.md",
+          "code": "const state = await wallet.getAccountState()\nconst committedBalances = state.committed.balances\nconst verifiedBalances = state.verified.balances\nfor (const property in committedBalances) {\n  console.log(`Commited ${property} balance for ${wallet.address()}: ${tokenSet.formatToken(property, committedBalances[property])}`)\n}\nfor (const property in verifiedBalances) {\n  console.log(`Verified ${property} balance for ${wallet.address()}: ${tokenSet.formatToken(property, verifiedBalances[property])}`)\n}"
+        },
+        {
+          "title": "Transfer с packable token amount и fee",
+          "language": "javascript",
+          "sourcePath": "en/18/07.md",
+          "code": "const closestPackableAmount = zksync.utils.closestPackableTransactionAmount(tokenSet.parseToken(token, amountToTransfer))\nconst closestPackableFee = zksync.utils.closestPackableTransactionFee(tokenSet.parseToken(token, transferFee))\nconst transfer = await from.syncTransfer({\n  to: toAddress,\n  token: token,\n  amount: closestPackableAmount,\n  fee: closestPackableFee\n})"
+        },
+        {
+          "title": "Форматирование fees через TokenSet",
+          "language": "javascript",
+          "sourcePath": "en/18/09.md",
+          "code": "async function getFee(transactionType, address, token, zkSyncProvider, tokenSet) {\n  const fee = await zkSyncProvider.getTransactionFee(transactionType, address, token)\n  return tokenSet.formatToken(token, fee.totalFee)\n}"
+        }
+      ],
+      "chapters": [
+        {
+          "order": 1,
+          "title": "Advanced zkSync Concepts",
+          "path": "en/18/00-overview.md"
+        },
+        {
+          "order": 2,
+          "title": "Intro",
+          "path": "en/18/01.md"
+        },
+        {
+          "order": 3,
+          "title": "Work with tokens",
+          "path": "en/18/02.md"
+        },
+        {
+          "order": 4,
+          "title": "Approve ERC20 token transfers",
+          "path": "en/18/03.md"
+        },
+        {
+          "order": 5,
+          "title": "Approve ERC20 token transfers",
+          "path": "en/18/04.md"
+        },
+        {
+          "order": 6,
+          "title": "Update the depositToZkSync function",
+          "path": "en/18/05.md"
+        },
+        {
+          "order": 7,
+          "title": "Update the displayZkSyncBalance function",
+          "path": "en/18/06.md"
+        },
+        {
+          "order": 8,
+          "title": "Update the transfer function",
+          "path": "en/18/07.md"
+        },
+        {
+          "order": 9,
+          "title": "Update the withdrawToEthereum function",
+          "path": "en/18/08.md"
+        },
+        {
+          "order": 10,
+          "title": "Update the getFee function",
+          "path": "en/18/09.md"
+        },
+        {
+          "order": 11,
+          "title": "Lesson Complete!",
+          "path": "en/18/lessoncomplete.md"
+        }
+      ]
+    }
+  ]
+}

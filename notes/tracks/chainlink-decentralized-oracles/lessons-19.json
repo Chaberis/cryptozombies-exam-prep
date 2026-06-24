@@ -1,0 +1,126 @@
+{
+  "lessonId": 19,
+  "track": "Chainlink: Decentralized Oracles",
+  "siteTitle": "Data Feeds and Computation",
+  "siteChapterCount": 12,
+  "repoEntryCount": 13,
+  "ruAvailable": false,
+  "codeRepoAvailable": false,
+  "summary": [
+    "Урок 19 знакомит с Chainlink как инфраструктурой для децентрализованных оракулов и показывает два главных сценария: чтение ценовых data feeds и получение проверяемой randomness через VRF.",
+    "Первая половина урока строит `PriceConsumerV3`, который читает ETH/USD цену через `AggregatorV3Interface` и разбирает tuple, возвращаемый `latestRoundData()`.",
+    "Вторая половина урока переносит старый `ZombieFactory` на Chainlink VRF: контракт наследует `VRFConsumerBase`, настраивает coordinator/LINK/keyHash/fee, отправляет request и принимает callback с криптографически проверенной случайностью."
+  ],
+  "mustKnow": [
+    "что такое oracle, DON и hybrid smart contract;",
+    "почему on-chain контракты не могут безопасно получать внешние данные напрямую;",
+    "как импортировать Chainlink интерфейсы и consumer-базы из `@chainlink/contracts`;",
+    "как привязывать интерфейс к конкретному адресу feed-контракта;",
+    "как читать tuple через `latestRoundData()` и зачем нужен `decimals()`;",
+    "чем data feeds отличаются от VRF по модели запросов и оплате;",
+    "что такое `VRFConsumerBase`, `VRF Coordinator`, `LINK`, `keyHash`, `fee`;",
+    "как работает двухтранзакционная request/callback модель у VRF."
+  ],
+  "examTasks": [
+    "реализовать `PriceConsumerV3` с `AggregatorV3Interface public priceFeed` и `getLatestPrice()`;",
+    "разобрать только нужное значение из tuple через синтаксис ` (,int price,,,) = ... `;",
+    "добавить `getDecimals()` и объяснить, зачем нужен scale у price feeds;",
+    "сделать контракт-наследник `VRFConsumerBase` с вызовом конструктора базового класса;",
+    "объявить и инициализировать `keyHash`, `fee`, `randomResult`;",
+    "написать `getRandomNumber()` и `fulfillRandomness(...)`."
+  ],
+  "chapters": [
+    {
+      "order": 1,
+      "enTitle": "Data Feeds and Computation",
+      "enPath": "en/19/00-overview.md"
+    },
+    {
+      "order": 2,
+      "enTitle": "Chainlink Data Feeds Introduction",
+      "enPath": "en/19/01.md"
+    },
+    {
+      "order": 3,
+      "enTitle": "Importing from NPM and Github",
+      "enPath": "en/19/02.md"
+    },
+    {
+      "order": 4,
+      "enTitle": "AggregatorV3Interface",
+      "enPath": "en/19/03.md"
+    },
+    {
+      "order": 5,
+      "enTitle": "Working with Tuples",
+      "enPath": "en/19/04.md"
+    },
+    {
+      "order": 6,
+      "enTitle": "Chainlink Data Feeds Decimals",
+      "enPath": "en/19/05.md"
+    },
+    {
+      "order": 7,
+      "enTitle": "Chainlink Data Feeds References",
+      "enPath": "en/19/06.md"
+    },
+    {
+      "order": 8,
+      "enTitle": "Chainlink VRF Introduction",
+      "enPath": "en/19/07.md"
+    },
+    {
+      "order": 9,
+      "enTitle": "Constructor in a constructor",
+      "enPath": "en/19/08.md"
+    },
+    {
+      "order": 10,
+      "enTitle": "Define our Chainlink VRF variables",
+      "enPath": "en/19/09.md"
+    },
+    {
+      "order": 11,
+      "enTitle": "The requestRandomness and fulfillRandomness functions",
+      "enPath": "en/19/10.md"
+    },
+    {
+      "order": 12,
+      "enTitle": "Delete the old pseudo-random number generator",
+      "enPath": "en/19/11.md"
+    },
+    {
+      "order": 13,
+      "enTitle": "Lesson Complete!",
+      "enPath": "en/19/lessoncomplete.md"
+    }
+  ],
+  "snippets": [
+    {
+      "title": "Финальный `PriceConsumerV3` для data feeds",
+      "language": "solidity",
+      "code": "pragma solidity ^0.6.7;\n\nimport \"@chainlink/contracts/src/v0.6/interfaces/AggregatorV3Interface.sol\";\n\ncontract PriceConsumerV3 {\n  AggregatorV3Interface public priceFeed;\n\n  constructor() public {\n    priceFeed = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);\n  }\n\n  function getLatestPrice() public view returns (int) {\n    (,int price,,,) = priceFeed.latestRoundData();\n    return price;\n  }\n\n  function getDecimals() public view returns (uint8) {\n    uint8 decimals = priceFeed.decimals();\n    return decimals;\n  }\n}"
+    },
+    {
+      "title": "Tuple-разбор результата `latestRoundData()`",
+      "language": "solidity",
+      "code": "function getLatestPrice() public view returns (int) {\n  (,int price,,,) = priceFeed.latestRoundData();\n  return price;\n}"
+    },
+    {
+      "title": "Вызов конструктора `VRFConsumerBase` из конструктора потомка",
+      "language": "solidity",
+      "code": "constructor() VRFConsumerBase(\n    0x6168499c0cFfCaCD319c818142124B7A15E857ab, // VRF Coordinator\n    0x01BE23585060835E02B77ef475b0Cc51aA1e0709  // LINK Token\n) public{\n\n}"
+    },
+    {
+      "title": "Запрос randomness и callback VRF",
+      "language": "solidity",
+      "code": "function getRandomNumber() public returns (bytes32 requestId) {\n    return requestRandomness(keyHash, fee);\n}\n\nfunction fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {\n    randomResult = randomness;\n}"
+    },
+    {
+      "title": "Финальный `ZombieFactory` c Chainlink VRF",
+      "language": "solidity",
+      "code": "pragma solidity ^0.6.6;\n\nimport \"@chainlink/contracts/src/v0.6/VRFConsumerBase.sol\";\n\ncontract ZombieFactory is VRFConsumerBase {\n\n    uint dnaDigits = 16;\n    uint dnaModulus = 10 ** dnaDigits;\n\n    bytes32 public keyHash;\n    uint256 public fee;\n    uint256 public randomResult;\n\n    struct Zombie {\n        string name;\n        uint dna;\n    }\n\n    Zombie[] public zombies;\n\n    constructor() VRFConsumerBase(\n        0x6168499c0cFfCaCD319c818142124B7A15E857ab, // VRF Coordinator\n        0x01BE23585060835E02B77ef475b0Cc51aA1e0709  // LINK Token\n    ) public{\n        keyHash = 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311;\n        fee = 100000000000000000;\n\n    }\n\n    function _createZombie(string memory _name, uint _dna) private {\n        zombies.push(Zombie(_name, _dna));\n    }\n\n    function getRandomNumber() public returns (bytes32 requestId) {\n        return requestRandomness(keyHash, fee);\n    }\n\n    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {\n        randomResult = randomness;\n    }\n}"
+    }
+  ]
+}

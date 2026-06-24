@@ -1,0 +1,66 @@
+{
+  "repoName": "cryptozombies-exam-prep",
+  "visibility": "private",
+  "notes": {
+    "tracks": [
+      "solidity-beginner-to-intermediate",
+      "advanced-solidity-get-in-depth-knowledge",
+      "chainlink-decentralized-oracles",
+      "beyond-ethereum-explore-the-blockchain-ecosystem",
+      "tron-decentralize-the-web"
+    ]
+  },
+  "sourceExtracts": {
+    "cryptozombie-lessons": {
+      "englishLessons": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "10",
+        "11",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20"
+      ],
+      "russianLessons": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "metadataFiles": [
+        "README.md",
+        "index.ts",
+        "en/index.ts",
+        "en/index.json",
+        "ru/index.ts",
+        "ru/index.json",
+        "license"
+      ]
+    },
+    "cryptozombies-lesson-code": {
+      "lessons": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "10",
+        "11"
+      ],
+      "metadataFiles": [
+        "README.md",
+        "LICENSE"
+      ]
+    }
+  }
+}
